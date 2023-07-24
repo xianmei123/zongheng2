@@ -4,13 +4,13 @@
 
 #include <vector> // 包含vector头文件
 
-class NonMovableUnit {
+class NonMovableUnit: public BaseUnit {
 public:
     // 构造函数
     NonMovableUnit(int id); 
 
     // 析构函数
-    ~NonMovableUnit();
+    virtual ~NonMovableUnit();
 
     // 属性的getter和setter方法
     int getID() const;

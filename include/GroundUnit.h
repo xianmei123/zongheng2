@@ -1,16 +1,17 @@
 #ifndef GROUNDUNIT_H
 #define GROUNDUNIT_H
 
+#include "BaseUnit.h"
 #include <string>
 #include <vector>
 
-class GroundUnit {
+class GroundUnit: public BaseUnit {
 public:
     // 构造函数
     GroundUnit(int id);
 
     // 析构函数 对象删除前，保存最终的状态
-    ~GroundUnit();
+    virtual ~GroundUnit();
 
     void move(double timeSlice);            // 移动对象的方法
     void change_speed();    // 改变对象速度的方法
@@ -55,9 +56,6 @@ private:
     double communication_distance;      // 通讯距离
 
     std::vector<int> relatedObjectIDs;  // 与其关联的对象ID列表
-
-    // 生成唯一的UID方法（可以根据需求自行实现）
-    int generateUID();
 };
 
 #endif // GROUNDUNIT_H
