@@ -21,7 +21,6 @@ public:
     double getPositionZ() const;                                 
     double getSize() const;        
     double getCommunicationDistance() const;
-    const std::vector<int>& getRelatedObjectIDs() const; 
 
     void setStatus(bool status);
     void setPosition(double x, double y, double z);   
