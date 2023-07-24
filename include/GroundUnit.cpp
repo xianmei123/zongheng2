@@ -3,9 +3,8 @@
 #include <ctime>
 
 // 构造函数
-GroundUnit::GroundUnit() {
-    // 生成唯一ID给地面单位
-    id = generateUID();
+GroundUnit::GroundUnit(int id) 
+    : ID(id) {
     // 初始化其他属性
     positionX = 0.0;
     positionY = 0.0;
