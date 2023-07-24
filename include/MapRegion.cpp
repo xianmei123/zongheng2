@@ -1,4 +1,5 @@
 #include "MapRegion.h"
+#include <vector>
 
 // 构造函数
 MapRegion::MapRegion(int id) 
@@ -8,6 +9,9 @@ MapRegion::MapRegion(int id)
     centerY = 0.0
     centerZ = 0.0
     radius = 1.0
+
+    relatedMapUnitIDs = std::vector<int>()
+    includeObjectIDs = std::vector<int>()
 }
 
 MapRegion::MapRegion(int id, double centerX, double centerY, double centerZ, double radius)

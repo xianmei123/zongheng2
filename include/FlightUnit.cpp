@@ -2,6 +2,7 @@
 #include "UniqueIDGenerator.h"
 #include <cstdlib>
 #include <ctime>
+#include <vector>
 
 // 构造函数
 FlightUnit::FlightUnit(int id) 
@@ -18,6 +19,8 @@ FlightUnit::FlightUnit(int id)
     camp = 0; // 默认阵营为0（中立）
     communication_distance = 0.0; // 初始化通讯距离为0
     status = true; // 默认状态为活动状态
+
+    relatedObjectIDs = std::vector<int>();
 }
 
 // 析构函数

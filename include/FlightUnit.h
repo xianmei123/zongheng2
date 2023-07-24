@@ -55,9 +55,6 @@ private:
     double communication_distance;      // 通讯距离
 
     std::vector<int> relatedObjectIDs;  // 与其关联的对象ID列表
-
-    // 生成唯一的UID方法（可以根据需求自行实现）
-    int generateUID();
 };
 
 #endif // FLIGHTUNIT_H

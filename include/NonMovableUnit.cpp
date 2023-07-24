@@ -1,8 +1,17 @@
 #include "NonMovableUnit.h"
+#include <vector>
 
 // 构造函数
 NonMovableUnit::NonMovableUnit(int id)
-    : ID(id), positionX(0.0), positionY(0.0), positionZ(0.0), status(true), communication_distance(0.0), camp(0) {}
+    : ID(id) {
+        positionX = 0.0, 
+        positionY = 0.0, 
+        positionZ = 0.0, 
+        status = true, 
+        communication_distance = 0.0, 
+        camp = 0,
+        related_object_ids = std::vector<int>();
+    }
 
 // 析构函数
 NonMovableUnit::~NonMovableUnit() {}
