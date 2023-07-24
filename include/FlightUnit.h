@@ -7,7 +7,7 @@
 class FlightUnit {
 public:
     // 构造函数
-    FlightUnit();
+    FlightUnit(int id);
 
     // 析构函数 对象删除前，保存最终的状态
     ~FlightUnit();
@@ -41,9 +41,9 @@ public:
     void addRelatedObjectID(int objectID);           
 
 private:
-    int id;                             // 飞行单位ID
+    int ID;                             // 飞行单位ID
     int camp;                           // 所属阵营
-    bool status;                        // 对象的状态（活动/死亡等）
+    bool status;                        // 对象的状态（活动/死亡）
     double positionX;                   // 位置坐标的X分量
     double positionY;                   // 位置坐标的Y分量
     double positionZ;                   // 位置坐标的Z分量

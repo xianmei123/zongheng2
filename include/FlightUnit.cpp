@@ -1,11 +1,11 @@
 #include "FlightUnit.h"
+#include "UniqueIDGenerator.h"
 #include <cstdlib>
 #include <ctime>
 
 // 构造函数
-FlightUnit::FlightUnit() {
-    // 生成唯一ID给飞行单位
-    id = generateUID();
+FlightUnit::FlightUnit(int id) 
+    : ID(id) {
     // 初始化其他属性
     positionX = 0.0;
     positionY = 0.0;
