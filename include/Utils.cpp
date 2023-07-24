@@ -37,3 +37,13 @@ const MapRegion& getMapBlockIndex(const BaseUnit& object, const std::vector<MapR
 
     return *closestMapRegion;
 }
+
+
+void updateSpeed(const BaseUnit& object, double speed, double directionX, double directionY, double directionZ, double mapSizeX, double mapSizeY, double mapSizeZ){
+    const double objectX = object.getPositionX();
+    const double objectY = object.getPositionY();
+    const double objectZ = object.getPositionZ();
+
+    if(objectX + object.)
+    
+}

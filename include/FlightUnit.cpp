@@ -123,16 +123,39 @@ int FlightUnit::generateUID() {
 // 移动对象的方法实现
 void FlightUnit::move(double timeSlice) {
     // 根据速度和运动方向更新位置
-    positionX += speed * directionX * timeSlice;
-    positionY += speed * directionY * timeSlice;
-    positionZ += speed * directionZ * timeSlice;
+    double direction = sqrt(this->directionX*this->directionX + this->directionY*this->directionY + this->directionZ*this->directionZ);
+
+    this->positionX += this->speed * timeSlice * directionX / direction;
+    this->positionY += this->speed * timeSlice * directionX / direction;
+    this->positionZ += this->speed * timeSlice * directionX / direction;
 }
 
 // 改变对象速度的方法实现
-void FlightUnit::change_speed() {
+void FlightUnit::changeSpeed(double timeSlice, double speed, double directionX, double directionY, double directionZ, double mapSizeX, double mapSizeY, double mapSizeZ) {
     // 在实际应用中，根据需求实现改变速度的逻辑
     // 这里只是一个示例
-    speed += 1.0;
+    this->speed = speed;
+
+    double direction = sqrt(directionX*directionX + directionY*directionY + directionZ*directionZ);
+
+    double nextPosX = this->positionX + timeSlice * this->speed * directionX / direction;
+    double nextPosY = this->positionY + timeSlice * this->speed * directionY / direction;
+    double nextPosZ = this->positionZ + timeSlice * this->speed * directionZ / direction;
+
+    if(nextPosX > mapSizeX || nextPosX < 0){
+        directionX = -directionX;
+    }
+    if(nextPosY > mapSizeY || nextPosY < 0){
+        directionY = -directionY;
+    }
+    if(nextPosZ > mapSizeZ || nextPosZ < 0){
+        directionZ = -directionZ;
+    }
+    this->directionX = directionX;
+    this->directionY = directionY;
+    this->directionZ = directionZ;
+
+
 }
 
 void FlightUnit::setCommunicationDistance(double distance) {

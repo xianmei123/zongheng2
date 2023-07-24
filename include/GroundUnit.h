@@ -39,7 +39,8 @@ public:
     void setSize(double size);                        
     void setCamp(int camp);         
     void setCommunicationDistance(double distance);
-    void addRelatedObjectID(int objectID);           
+    void addRelatedObjectID(int objectID); 
+    void changeSpeed(double timeSlice, double speed, double directionX, double directionY, double directionZ, double mapSizeX, double mapSizeY, double mapSizeZ);          
 
 private:
     int ID;                             // 飞行单位ID
