@@ -66,5 +66,4 @@
   - radius, double 半径, 值为到任意一个端点的长度（规则的多边形）
   - relatedMapUnitIDs, array<int> 两个块的中心距离小于通讯距离
   - includeObjectIDs, array<int>, 区域中包含的对象ID
-- 方法
-  - 
+- 方法 
