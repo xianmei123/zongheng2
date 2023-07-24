@@ -9,7 +9,7 @@ public:
     // 构造函数
     FlightUnit();
 
-    // 析构函数
+    // 析构函数 对象删除前，保存最终的状态
     ~FlightUnit();
 
     void move();            // 移动对象的方法
