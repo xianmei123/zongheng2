@@ -117,11 +117,11 @@ int GroundUnit::generateUID() {
 }
 
 // 移动对象的方法实现
-void GroundUnit::move() {
+void GroundUnit::move(double timeSlice) {
     // 根据速度和运动方向更新位置
-    positionX += speed * directionX;
-    positionY += speed * directionY;
-    positionZ += speed * directionZ;
+    positionX += speed * directionX * timeSlice;
+    positionY += speed * directionY * timeSlice;
+    positionZ += speed * directionZ * timeSlice;
 }
 
 // 改变对象速度的方法实现

@@ -12,7 +12,7 @@ public:
     // 析构函数 对象删除前，保存最终的状态
     ~FlightUnit();
 
-    void move();            // 移动对象的方法
+    void move(double timeSlice);            // 移动对象的方法
     void change_speed();    // 改变对象速度的方法
 
     // 属性的getter和setter方法
