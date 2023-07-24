@@ -1,6 +1,15 @@
 #include "MapRegion.h"
 
 // 构造函数
+MapRegion::MapRegion(int id) 
+    : ID(id) {
+    // 初始化其它属性
+    centerX = 0.0
+    centerY = 0.0
+    centerZ = 0.0
+    radius = 1.0
+}
+
 MapRegion::MapRegion(int id, double centerX, double centerY, double centerZ, double radius)
     : ID(id), centerX(centerX), centerY(centerY), centerZ(centerZ), radius(radius) {}
 
