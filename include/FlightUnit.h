@@ -27,7 +27,8 @@ public:
     double getDirectionX() const;                  
     double getDirectionY() const;                  
     double getDirectionZ() const;                  
-    double getSize() const;                            
+    double getSize() const;        
+    double getCommunicationDistance() const;
     const std::vector<int>& getRelatedObjectIDs() const; 
 
     void setStatus(bool status);
@@ -35,7 +36,8 @@ public:
     void setSpeed(double speed);                       
     void setDirection(double x, double y, double z);   
     void setSize(double size);                        
-    void setCamp(int camp);            
+    void setCamp(int camp);         
+    void setCommunicationDistance(double distance);
     void addRelatedObjectID(int objectID);           
 
 private:
@@ -50,6 +52,8 @@ private:
     double directionY;                  // 运动方向的Y分量
     double directionZ;                  // 运动方向的Z分量
     double size;                        // 单位大小
+    double communication_distance;      // 通讯距离
+
     std::vector<int> relatedObjectIDs;  // 与其关联的对象ID列表
 
     // 生成唯一的UID方法（可以根据需求自行实现）

@@ -16,6 +16,7 @@ FlightUnit::FlightUnit() {
     directionZ = 0.0;
     size = 0.0;
     camp = 0; // 默认阵营为0（中立）
+    communication_distance = 0.0; // 初始化通讯距离为0
     status = true; // 默认状态为活动状态
 }
 
@@ -67,6 +68,10 @@ double FlightUnit::getDirectionZ() const {
 
 double FlightUnit::getSize() const {
     return size;
+}
+
+double FlightUnit::getCommunicationDistance() const {
+    return communication_distance;
 }
 
 const std::vector<int>& FlightUnit::getRelatedObjectIDs() const {
@@ -125,4 +130,8 @@ void FlightUnit::change_speed() {
     // 在实际应用中，根据需求实现改变速度的逻辑
     // 这里只是一个示例
     speed += 1.0;
+}
+
+void FlightUnit::setCommunicationDistance(double distance) {
+    communication_distance = distance;
 }
