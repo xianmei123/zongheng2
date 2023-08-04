@@ -26,6 +26,7 @@ public:
     double getPositionZ() const;                                 
     double getSize() const;        
     double getCommunicationDistance() const;
+    int getPriority() const;
 
     void setStatus(bool status);
     void setPosition(double x, double y, double z);   
@@ -34,6 +35,7 @@ public:
     void setCommunicationDistance(double distance);
     void setDirection(double x, double y, double z);
     void setSpeed(double speed);
+    void setPriority(int priority);
 
 private:
     int ID;                             // 单位ID
@@ -48,6 +50,7 @@ private:
     double directionY;                  // 运动方向的Y分量
     double directionZ;                  // 运动方向的Z分量
     double speed;                       // 速度
+    int priority;                       // 优先级
 };
 
 #endif // BASEUNIT_H
