@@ -8,7 +8,7 @@ class FlightUnit: public BaseUnit {
 public:
     // 构造函数
     FlightUnit(int id);
-
+    FlightUnit(int id, double position_x, double position_y, double position_z, double speed);
     // 析构函数 对象删除前，保存最终的状态
     virtual ~FlightUnit();
 
@@ -30,32 +30,30 @@ public:
     double getSize() const;        
     double getCommunicationDistance() const;
     const std::vector<int>& getRelatedObjectIDs() const; 
-
+                       
+    void setCamp(int camp); 
     void setStatus(bool status);
     void setPosition(double x, double y, double z);   
     void setSpeed(double speed);                       
     void setDirection(double x, double y, double z);   
-    void setSize(double size);                        
-    void setCamp(int camp);         
+    void setSize(double size);         
     void setCommunicationDistance(double distance);
-    void addRelatedObjectID(int objectID);       
-    void changeSpeed(double timeSlice, double speed, double directionX, double directionY, double directionZ, double mapSizeX, double mapSizeY, double mapSizeZ);    
+    void addRelatedObjectID(int objectID);
+    int generateUID();         
 
 private:
-    int ID;                             // 飞行单位ID
-    int camp;                           // 所属阵营
-    bool status;                        // 对象的状态（活动/死亡）
-    double positionX;                   // 位置坐标的X分量
-    double positionY;                   // 位置坐标的Y分量
-    double positionZ;                   // 位置坐标的Z分量
-    double speed;                       // 速度
-    double directionX;                  // 运动方向的X分量
-    double directionY;                  // 运动方向的Y分量
-    double directionZ;                  // 运动方向的Z分量
-    double size;                        // 单位大小
-    double communication_distance;      // 通讯距离
-
-    std::vector<int> relatedObjectIDs;  // 与其关联的对象ID列表
+    int ID_;                             // 飞行单位ID
+    int camp_;                           // 所属阵营
+    bool status_;                        // 对象的状态（活动/死亡）
+    double positionX_;                   // 位置坐标的X分量
+    double positionY_;                   // 位置坐标的Y分量
+    double positionZ_;                   // 位置坐标的Z分量
+    double speed_;                       // 速度
+    double directionX_;                  // 运动方向的X分量
+    double directionY_;                  // 运动方向的Y分量
+    double size_;                        // 单位大小
+    double communication_distance_;      // 通讯距离
+    std::vector<int> related_objectIDs_;  // 与其关联的对象ID列表
 };
 
 #endif // FLIGHTUNIT_H

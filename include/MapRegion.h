@@ -6,7 +6,7 @@
 class MapRegion {
 public:
     // 构造函数
-    MapRegion(int id)
+    MapRegion(int id);
     MapRegion(int id, double centerX, double centerY, double centerZ, double radius);
 
     // 获取属性的方法

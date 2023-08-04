@@ -23,6 +23,23 @@ GroundUnit::GroundUnit(int id)
     relatedObjectIDs = std::vector<int>();
 }
 
+GroundUnit::GroundUnit(int id, double position_x, double position_y, double position_z, double speed):
+    ID(id),
+    positionX(position_x),
+    positionY(position_y),
+    positionZ(position_z),
+    speed(speed) {
+    speed = 0.0;
+    directionX = 0.0;
+    directionY = 0.0;
+    directionZ = 0.0;
+    size = 0.0;
+    camp = 0; // 默认阵营为0（中立）
+    communication_distance = 0.0; // 初始化通讯距离为0
+    status = true; // 默认状态为活动状态
+
+    relatedObjectIDs = std::vector<int>();
+}
 // 析构函数
 GroundUnit::~GroundUnit() {
     // 析构函数代码，如果有的话

@@ -10,6 +10,8 @@ public:
     // 构造函数
     GroundUnit(int id);
 
+    GroundUnit(int id, double position_x, double position_y, double position_z, double speed);
+
     // 析构函数 对象删除前，保存最终的状态
     virtual ~GroundUnit();
 

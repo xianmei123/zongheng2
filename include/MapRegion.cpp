@@ -5,13 +5,13 @@
 MapRegion::MapRegion(int id) 
     : ID(id) {
     // 初始化其它属性
-    centerX = 0.0
-    centerY = 0.0
-    centerZ = 0.0
-    radius = 1.0
+    centerX = 0.0;
+    centerY = 0.0;
+    centerZ = 0.0;
+    radius = 1.0;
 
-    relatedMapUnitIDs = std::vector<int>()
-    includeObjectIDs = std::vector<int>()
+    relatedMapUnitIDs = std::vector<int>();
+    includeObjectIDs = std::vector<int>();
 }
 
 MapRegion::MapRegion(int id, double centerX, double centerY, double centerZ, double radius)

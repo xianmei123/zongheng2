@@ -7,7 +7,8 @@
 class NonMovableUnit: public BaseUnit {
 public:
     // 构造函数
-    NonMovableUnit(int id); 
+    NonMovableUnit(int id);
+    NonMovableUnit(int id, double position_x, double position_y, double position_z);
 
     // 析构函数
     virtual ~NonMovableUnit();

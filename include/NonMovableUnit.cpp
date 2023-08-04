@@ -13,6 +13,18 @@ NonMovableUnit::NonMovableUnit(int id)
         related_object_ids = std::vector<int>();
     }
 
+NonMovableUnit::NonMovableUnit(int id, double position_x, double position_y, double position_z):
+    ID(id),
+    positionX(position_x),
+    positionY(position_y),
+    positionZ(position_z) {
+        status = true, 
+        communication_distance = 0.0, 
+        camp = 0,
+        related_object_ids = std::vector<int>();
+    }
+
+
 // 析构函数
 NonMovableUnit::~NonMovableUnit() {}
 
