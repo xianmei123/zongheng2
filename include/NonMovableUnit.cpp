@@ -18,7 +18,7 @@ NonMovableUnit::~NonMovableUnit() {}
 
 // 属性的getter方法实现
 int NonMovableUnit::getID() const {
-    return id;
+    return ID;
 }
 
 double NonMovableUnit::getPositionX() const {

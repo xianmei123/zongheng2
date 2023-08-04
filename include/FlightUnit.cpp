@@ -30,7 +30,7 @@ FlightUnit::~FlightUnit() {
 
 // 获取属性的方法实现
 int FlightUnit::getID() const {
-    return id;
+    return ID;
 }
 
 int FlightUnit::getCamp() const {

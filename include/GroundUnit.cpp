@@ -30,7 +30,7 @@ GroundUnit::~GroundUnit() {
 
 // 获取属性的方法实现
 int GroundUnit::getID() const {
-    return id;
+    return ID;
 }
 
 int GroundUnit::getCamp() const {
