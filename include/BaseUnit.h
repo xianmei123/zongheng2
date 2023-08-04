@@ -8,6 +8,7 @@ class BaseUnit {
 public:
     // 构造函数
     BaseUnit(int id);
+    BaseUnit(int id, double speed, double directionX, double directionY, double directionZ, double positionX, double positionY, double getPositionZ);
 
     // 析构函数 对象删除前，保存最终的状态
     ~BaseUnit();
@@ -15,7 +16,11 @@ public:
     int getID() const;                             
     int getCamp() const;                           
     bool getStatus() const;
+    double getSpeed() const;
 
+    double getDirectionX() const;
+    double getDirectionY() const;
+    double getDirectionZ() const;
     double getPositionX() const;                   
     double getPositionY() const;                   
     double getPositionZ() const;                                 
@@ -27,6 +32,9 @@ public:
     void setSize(double size);                        
     void setCamp(int camp);         
     void setCommunicationDistance(double distance);
+    void setDirection(double x, double y, double z);
+    void setSpeed(double speed);
+
 private:
     int ID;                             // 单位ID
     int camp;                           // 所属阵营
@@ -36,6 +44,10 @@ private:
     double positionZ;                   // 位置坐标的Z分量
     double size;                        // 单位大小
     double communication_distance;      // 通讯距离
+    double directionX;                  // 运动方向的X分量
+    double directionY;                  // 运动方向的Y分量
+    double directionZ;                  // 运动方向的Z分量
+    double speed;                       // 速度
 };
 
 #endif // BASEUNIT_H
