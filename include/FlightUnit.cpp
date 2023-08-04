@@ -23,6 +23,28 @@ FlightUnit::FlightUnit(int id)
     relatedObjectIDs = std::vector<int>();
 }
 
+FlightUnit::FlightUnit(int id, double position_x, double position_y, double position_z, double speed):
+    ID(id),
+    positionX(position_x),
+    positionY(position_y),
+    positionZ(position_z),
+    speed(speed) {
+    // 初始化其他属性
+    positionX = 0.0;
+    positionY = 0.0;
+    positionZ = 0.0;
+    speed = 0.0;
+    directionX = 0.0;
+    directionY = 0.0;
+    directionZ = 0.0;
+    size = 0.0;
+    camp = 0; // 默认阵营为0（中立）
+    communication_distance = 0.0; // 初始化通讯距离为0
+    status = true; // 默认状态为活动状态
+
+    relatedObjectIDs = std::vector<int>();
+}
+
 // 析构函数
 FlightUnit::~FlightUnit() {
     // 析构函数代码，如果有的话
@@ -30,7 +52,7 @@ FlightUnit::~FlightUnit() {
 
 // 获取属性的方法实现
 int FlightUnit::getID() const {
-    return id;
+    return ID;
 }
 
 int FlightUnit::getCamp() const {
