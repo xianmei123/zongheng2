@@ -12,12 +12,6 @@ using namespace std;
 //设置两个实体距离小于多少时，二者可以建立联系
 #define CONNECTED_DISTANCE 100.00
 
-//使用BaseUnit作为单位，使用基类
-vector<BaseUnit> entity_list;
-
-//MapRegion作为地图块类
-vector<MapRegion> map_block_list;
-
 //时间戳记录
 double TimeStamp = 0.0;
 
@@ -27,7 +21,7 @@ void clear_map_include_list()
     int i = 0;
     for (i = 0; i < map_block_list.size(); i++) {
         //**此处clearIncludeIDs方法应在MapRegion类里添加，清空IncludeObjectIDs**
-        map_block_list.at(i).clearIncludeIDs();
+        map_block_list.at(i).clearIncludeObjectID();
     }
 }
 
@@ -35,7 +29,7 @@ void clear_map_include_list()
 /*@process 遍历所有的实体，根据实体类提供的方法判断该实体属于哪一块地图块，并将其加入地图块的关联列表中*/
 /*@result 所有实体根据其最新位置，已加入到相应的地图块中的关联列表*/
 /*@output null*/
-void refresh_map_block_list()
+void refresh_map_block_list(Map<int, BaseUnit> entity_list, vector<MapRegion> map_block_list)
 {
     int i = 0;
     //在刷新之前，应将所有地图块的包含列表全部清空
@@ -53,7 +47,7 @@ void clear_entity_connection_list()
     int i = 0;
     for (i = 0; i < entity_list.size(); i++) {
         //**此处clearRelatedObjectIDs方法应在BaseUnit类(每个种类的实体应该都有联系关系，应该可以作为基类属性)里添加，清空RelatedObjectIDs**
-        entity_list.at(i).clearRelatedObjectIDs();
+        entity_list.at(i).getRelatedMapUnitIDs().clean();
     }
 }
 

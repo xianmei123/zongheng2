@@ -101,13 +101,8 @@ void BaseUnit::changeSpeed(double timeSlice, double speed, double directionX, do
     // 在实际应用中，根据需求实现改变速度的逻辑
     // 这里只是一个示例
     this->speed = speed;
-
-    // double direction = sqrt(directionX*directionX + directionY*directionY + directionZ*directionZ);
-
-    // double nextPosX = this->positionX + timeSlice * this->speed * directionX / direction;
-    // double nextPosY = this->positionY + timeSlice * this->speed * directionY / direction;
-    // double nextPosZ = this->positionZ + timeSlice * this->speed * directionZ / direction;
-    this.move(timeSlice)
+    // // 移动
+    // this.move(timeSlice)
     if(nextPosX > mapSizeX || nextPosX < 0){
         directionX = -directionX;
     }

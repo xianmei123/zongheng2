@@ -54,3 +54,7 @@ void MapRegion::addRelatedMapUnitID(int mapUnitID) {
 void MapRegion::addIncludeObjectID(int objectID) {
     includeObjectIDs.push_back(objectID);
 }
+
+void clearIncludeObjectID() {
+    this.includeObjectIDs.clear();
+}
