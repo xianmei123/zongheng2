@@ -8,21 +8,15 @@
 #include "../include/FlightUnit.h"
 #include "../include/GroundUnit.h"
 #include "../include/NonMovableUnit.h"
+#include "../include/BaseUnit.h"
 
 using namespace std;
 int main() {
-<<<<<<< Updated upstream
-  //随机生成四个类的比例，根据比例生成类的对象，分别存在
-  // 赶紧写quickly
-=======
   // 所有类的总个数
   int unit_num = 1000;
   int unit_kind = 4;
   vector<int> units(unit_kind);
-  map<int, FlightUnit> fast_flight_units;
-  map<int, FlightUnit> slow_flight_units;
-  map<int, GroundUnit> ground_units;
-  map<int, NonMovableUnit> non_movable_units;
+  map<int, BaseUnit> all_units;
   // 随机生成四个类的比例，根据比例生成类的对象，分别存在
   srand(time(0));
   vector<int> rand_data = GetRand(unit_kind, 1, 10);
@@ -33,50 +27,63 @@ int main() {
   int map_size_row = 10000;
   int map_size_col = 10000;
   // 开始生成对象, 按照速度大小范围依次生成对象
-  int cur_index = 0; // 已经添加的对象个数
-  for (int index = 0; index < units[0]; ++index) {  // 速度50~199
-    fast_flight_units[index] = FlightUnit(index, rand() % map_size_row, rand() % map_size_col, 0, 50 + rand() % 150);
+  int cur_id = 0; // 已经添加的对象个数
+  for (int id = 0; id < units[0]; ++id) {  // 速度50~199
+    all_units[id] = FlightUnit(id, rand() % map_size_row, rand() % map_size_col, 0, 50 + rand() % 150);
   }
-  cur_index += units[0];
-  for (int index = 0; index < units[1]; ++index) {  // 速度10~49
-    slow_flight_units[index] = FlightUnit(index + cur_index, rand() % map_size_row, rand() % map_size_col, 0, 10 + rand() % 40);
+  cur_id += units[0];
+  for (int id = 0; id < units[1]; ++id) {  // 速度10~49
+    all_units[id + cur_id] = FlightUnit(id + cur_id, rand() % map_size_row, rand() % map_size_col, 0, 10 + rand() % 40);
   }
-  cur_index += units[1];
-  for (int index = 0; index < units[2]; ++index) {  // 速度0~9
-    ground_units[index] = GroundUnit(index + cur_index, rand() % map_size_row, rand() % map_size_col, 0, 0 + rand() % 10);
+  cur_id += units[1];
+  for (int id = 0; id < units[2]; ++id) {  // 速度0~9
+    all_units[id + cur_id] = GroundUnit(id + cur_id, rand() % map_size_row, rand() % map_size_col, 0, 0 + rand() % 10);
   }
-  cur_index += units[2];
-  for (int index = 0; index < units[3]; ++index) {
-    non_movable_units[index] = NonMovableUnit(index + cur_index, rand() % map_size_row, rand() % map_size_col, 0);
+  cur_id += units[2];
+  for (int id = 0; id < units[3]; ++id) {
+    all_units[id + cur_id] = NonMovableUnit(id + cur_id, rand() % map_size_row, rand() % map_size_col, 0);
   }
+
+  // 得到速度变化时刻表
+  int rand_kind = 1;
+  int time = 3000;
+  int num = 100;
+  map<int, vector<int>> changeTime = GetChangeTime(rand_kind, time, num, unit_num, all_units);
 
   // 
   return 0;
 }
 
-vector<int> GetNewSpeedAndDirection(int index) {
+vector<int> GetNewSpeedAndDirection(int id, map<int, BaseUnit> all_units) {
+  vector<int> newSpeedAndDirection;
+  if (all_units[id].getPriority() == 1) {
+    newSpeedAndDirection.push_back(50 + rand() % 150);
+  } else if (all_units[id].getPriority() == 2) {
+    newSpeedAndDirection.push_back(10 + rand() % 40);
+  } else if (all_units[id].getPriority() == 3) {
+    newSpeedAndDirection.push_back(rand() % 10);
+  } else {
+    printf("Error type to change speed!");
+  }
+  newSpeedAndDirection.insert(newSpeedAndDirection.end(), {rand() % 10, rand() % 10, rand() % 10});
 
+  return newSpeedAndDirection;
 }
 
-map<int, vector<int>> GetChangeTime(int rand_kind, int time, int num) {
->>>>>>> Stashed changes
+// 该map返回一个map，key是需要进行改变的时刻，该key对应的vector中包含该时刻需要改变的对象id，以及该对象的新速度和方向
+map<int, vector<int>> GetChangeTime(int rand_kind, int time, int num, int unit_num, map<int, BaseUnit> all_units) {
   
   if (rand_kind == 1) { // 均匀分布
     vector<int> timestamps = GetRand(num, 0, time);
     sort(timestamps.begin(), timestamps.end());
+    vector<int> idNewSpeedAnddirection;
     for (int i = 0; i < num; ++i) {
-      switch (expression)
-      {
-      case /* constant-expression */:
-        /* code */
-        break;
-      
-      default:
-        break;
-      }
+      int changeId = rand() % (unit_num + 1);
+      idNewSpeedAnddirection.push_back(changeId);
+      vector<int> newSpeedAndDirection = GetNewSpeedAndDirection(changeId, all_units);
+      idNewSpeedAnddirection.insert(idNewSpeedAnddirection.end(), newSpeedAndDirection.begin(), newSpeedAndDirection.end());
+      map[timestamps[i]] = idNewSpeedAnddirection;
     }
-  } else if (rand_kind == 2) {  // 正态分布
-
   }
 }
 
