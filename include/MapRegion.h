@@ -20,7 +20,9 @@ public:
 
     // 设置属性的方法
     void addRelatedMapUnitID(int mapUnitID);    // 添加相关地图单元ID
+    void addSubRelatedMapUnitIDs() // 添加半相关地图单元ID数组
     void addIncludeObjectID(int objectID);      // 添加包含对象ID
+    void clearIncludeObjectID();
 
 private:
     int ID;                               // 区域ID
@@ -29,6 +31,7 @@ private:
     double centerZ;                       // 区域中心Z坐标
     double radius;                        // 区域半径
     std::vector<int> relatedMapUnitIDs;   // 相关地图单元ID数组
+    std::vector<int> subRelatedMapUnitIDs; // 半相关地图单元ID数组
     std::vector<int> includeObjectIDs;    // 包含对象ID数组
 };
 

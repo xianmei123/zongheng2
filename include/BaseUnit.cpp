@@ -85,3 +85,36 @@ void BaseUnit::setCamp(int camp) {
 void BaseUnit::setCommunicationDistance(double distance) {
     communication_distance = distance;
 }
+
+// 移动对象的方法实现
+void BaseUnit::move(double timeSlice) {
+    // 根据速度和运动方向更新位置
+    double direction = sqrt(this->directionX*this->directionX + this->directionY*this->directionY + this->directionZ*this->directionZ);
+
+    this->positionX += this->speed * timeSlice * directionX / direction;
+    this->positionY += this->speed * timeSlice * directionX / direction;
+    this->positionZ += this->speed * timeSlice * directionX / direction;
+}
+
+// 改变对象速度的方法实现
+void BaseUnit::changeSpeed(double timeSlice, double speed, double directionX, double directionY, double directionZ, double mapSizeX, double mapSizeY, double mapSizeZ) {
+    // 在实际应用中，根据需求实现改变速度的逻辑
+    // 这里只是一个示例
+    this->speed = speed;
+    // // 移动
+    // this.move(timeSlice)
+    if(nextPosX > mapSizeX || nextPosX < 0){
+        directionX = -directionX;
+    }
+    if(nextPosY > mapSizeY || nextPosY < 0){
+        directionY = -directionY;
+    }
+    if(nextPosZ > mapSizeZ || nextPosZ < 0){
+        directionZ = -directionZ;
+    }
+    this->directionX = directionX;
+    this->directionY = directionY;
+    this->directionZ = directionZ;
+
+
+}
