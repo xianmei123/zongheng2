@@ -13,7 +13,7 @@ public:
     // 析构函数 对象删除前，保存最终的状态
     ~BaseUnit();
 
-    void change_speed(double timeSlice, double speed, double directionX, double directionY, double directionZ, double mapSizeX, double mapSizeY, double mapSizeZ);    // 改变对象速度的方法
+    void changeSpeed(double timeSlice, double speed, double directionX, double directionY, double directionZ, double mapSizeX, double mapSizeY, double mapSizeZ);    // 改变对象速度的方法
     void move(double timeSlice);            // 移动对象的方法
 
     // 属性的getter和setter方法
@@ -42,7 +42,9 @@ public:
     void setPriority(int priority);
 
     const std::vector<int>& getRelatedObjectIDs() const; 
-    void addRelatedObjectID(int objectID);      
+    void addRelatedObjectID(int objectID);    
+    void clearRelatedObjectID();  
+    void deleteRelatedObjectID(int id); 
 private:
     int ID;                             // 单位ID
     int camp;                           // 所属阵营

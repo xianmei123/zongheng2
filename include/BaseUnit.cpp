@@ -43,6 +43,10 @@ bool BaseUnit::getStatus() const {
     return status;
 }
 
+double BaseUnit::getSpeed() const {
+    return speed;
+}
+
 double BaseUnit::getPositionX() const {
     return positionX;
 }
@@ -61,6 +65,10 @@ double BaseUnit::getSize() const {
 
 double BaseUnit::getCommunicationDistance() const {
     return communication_distance;
+}
+
+int BaseUnit::getPriority() const {
+    return priority;
 }
 
 // 属性的setter方法
@@ -92,8 +100,8 @@ void BaseUnit::move(double timeSlice) {
     double direction = sqrt(this->directionX*this->directionX + this->directionY*this->directionY + this->directionZ*this->directionZ);
 
     this->positionX += this->speed * timeSlice * directionX / direction;
-    this->positionY += this->speed * timeSlice * directionX / direction;
-    this->positionZ += this->speed * timeSlice * directionX / direction;
+    this->positionY += this->speed * timeSlice * directionY / direction;
+    this->positionZ += this->speed * timeSlice * directionZ / direction;
 }
 
 // 改变对象速度的方法实现
@@ -102,6 +110,11 @@ void BaseUnit::changeSpeed(double timeSlice, double speed, double directionX, do
     // 这里只是一个示例
     this->speed = speed;
     // // 移动
+    double direction = sqrt(this->directionX*this->directionX + this->directionY*this->directionY + this->directionZ*this->directionZ);
+
+    double nextPosX = this->positionX + this->speed * timeSlice * directionX / direction;
+    double nextPosY = this->positionY + this->speed * timeSlice * directionY / direction;
+    double nextPosZ = this->positionZ + this->speed * timeSlice * directionZ / direction;
     // this.move(timeSlice)
     if(nextPosX > mapSizeX || nextPosX < 0){
         directionX = -directionX;

@@ -4,6 +4,11 @@
 #include "BaseUnit.h"
 #include "MapRegion.h"
 #include <vector>
+#include <iostream>
+#include <cstdlib>
+
+//设置两个实体距离小于多少时，二者可以建立联系
+#define CONNECTED_DISTANCE 500.00
 
 
 // 计算两个点之间的欧几里德距离

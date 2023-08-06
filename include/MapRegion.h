@@ -16,7 +16,9 @@ public:
     double getCenterZ() const;              // 获取区域中心Z坐标
     double getRadius() const;               // 获取区域半径
     const std::vector<int>& getRelatedMapUnitIDs() const;    // 获取相关地图单元ID数组
+    const std::vector<int>& getSubRelatedMapUnitIDs() const;    // 获取相关地图单元ID数组
     const std::vector<int>& getIncludeObjectIDs() const;     // 获取包含对象ID数组
+    
 
     // 设置属性的方法
     void addRelatedMapUnitID(int mapUnitID);    // 添加相关地图单元ID

@@ -42,6 +42,10 @@ const std::vector<int>& MapRegion::getRelatedMapUnitIDs() const {
     return relatedMapUnitIDs;
 }
 
+const std::vector<int>& MapRegion::getSubRelatedMapUnitIDs() const {
+    return subRelatedMapUnitIDs;
+}
+
 const std::vector<int>& MapRegion::getIncludeObjectIDs() const {
     return includeObjectIDs;
 }
@@ -55,6 +59,6 @@ void MapRegion::addIncludeObjectID(int objectID) {
     includeObjectIDs.push_back(objectID);
 }
 
-void clearIncludeObjectID() {
-    this.includeObjectIDs.clear();
+void MapRegion::clearIncludeObjectID() {
+    includeObjectIDs.clear();
 }
