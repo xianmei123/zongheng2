@@ -3,18 +3,31 @@
 
 #include "BaseUnit.h"
 #include "MapRegion.h"
+#include "FlightUnit.h"
+#include "GroundUnit.h"
+#include "NonMovableUnit.h"
 #include <vector>
+#include <cmath>
 #include <iostream>
-#include <cstdlib>
+#include <map>
+#include <algorithm>
+
+using namespace std;
 
 //设置两个实体距离小于多少时，二者可以建立联系
-#define CONNECTED_DISTANCE 500.00
+#define CONNECTED_DISTANCE 500
 
-
-// 计算两个点之间的欧几里德距离
-double calculateDistance(double x1, double y1, double z1, double x2, double y2, double z2);
-
-// 找到距离Object最近的MapRegion对象并返回
-const MapRegion& getMapBlockIndex(const BaseUnit& object, const std::vector<MapRegion>& mapVector);
-
+void GetRand(int num, int min, int max, vector<int>& rand_data);
+void InitAllUnits(vector<int> units, map<int, BaseUnit>& all_units, int map_size_row, int map_size_col);
+void PrintAllUnit(map<int, BaseUnit> all_units, int time_stamp);
+void InitAllRegions(map<int, MapRegion>& all_regions, int map_size_row, int map_size_col, int radius);
+vector<int> GetNewSpeedAndDirection(int id, map<int, BaseUnit> all_units);
+map<int, vector<int>> GetChangeTime(int rand_kind, int time, int num, int unit_num, map<int, BaseUnit> all_units);
+double CalculateDistance(double x1, double y1, double z1, double x2, double y2, double z2);
+void GetMapRegion(BaseUnit unit, map<int, MapRegion> map_regions);
+void RefreshMapRegionUnits(map<int, BaseUnit> all_units, map<int, MapRegion> all_regions);
+void InitRelatedUnits(map<int, BaseUnit> all_units);
+void ClearRelatedObjects(map<int, BaseUnit> units, map<int, BaseUnit> all_units);
+void InitRelatedRegions(map<int, MapRegion> all_regions, int radius);
+void RefreshUnitsRelated(map<int, BaseUnit> units, map<int, BaseUnit> all_units, map<int, MapRegion> all_regions);
 #endif // UTILS_H

@@ -1,64 +1,63 @@
 #include "MapRegion.h"
-#include <vector>
 
 // 构造函数
 MapRegion::MapRegion(int id) 
-    : ID(id) {
-    // 初始化其它属性
-    centerX = 0.0;
-    centerY = 0.0;
-    centerZ = 0.0;
-    radius = 1.0;
-
-    relatedMapUnitIDs = std::vector<int>();
-    includeObjectIDs = std::vector<int>();
+  :id_(id) {
+  centerX_ = 0;
+  centerY_ = 0;
+  centerZ_ = 0;
+  radius_ = 1;
 }
 
 MapRegion::MapRegion(int id, double centerX, double centerY, double centerZ, double radius)
-    : ID(id), centerX(centerX), centerY(centerY), centerZ(centerZ), radius(radius) {}
+  :id_(id), centerX_(centerX), centerY_(centerY), centerZ_(centerZ), radius_(radius) {}
 
 // 获取属性的方法
 int MapRegion::getID() const {
-    return ID;
+  return id_;
 }
 
 double MapRegion::getCenterX() const {
-    return centerX;
+  return centerX_;
 }
 
 double MapRegion::getCenterY() const {
-    return centerY;
+  return centerY_;
 }
 
 double MapRegion::getCenterZ() const {
-    return centerZ;
+  return centerZ_;
 }
 
 double MapRegion::getRadius() const {
-    return radius;
+  return radius_;
 }
 
-const std::vector<int>& MapRegion::getRelatedMapUnitIDs() const {
-    return relatedMapUnitIDs;
+const vector<int> MapRegion::getRelatedMapRegions() const {
+  return related_map_regions_;
 }
 
-const std::vector<int>& MapRegion::getSubRelatedMapUnitIDs() const {
-    return subRelatedMapUnitIDs;
+const vector<int> MapRegion::getSubRelatedMapRegions() const {
+  return sub_related_map_regions_;
 }
 
-const std::vector<int>& MapRegion::getIncludeObjectIDs() const {
-    return includeObjectIDs;
+const vector<int> MapRegion::getIncludeUnits() const {
+  return include_units_;
 }
 
 // 设置属性的方法
-void MapRegion::addRelatedMapUnitID(int mapUnitID) {
-    relatedMapUnitIDs.push_back(mapUnitID);
+void MapRegion::addRelatedMapRegions(int map_region_id) {
+  related_map_regions_.push_back(map_region_id);
 }
 
-void MapRegion::addIncludeObjectID(int objectID) {
-    includeObjectIDs.push_back(objectID);
+void MapRegion::addSubRelatedMapRegions(int map_region_id) {
+  sub_related_map_regions_.push_back(map_region_id);
 }
 
-void MapRegion::clearIncludeObjectID() {
-    includeObjectIDs.clear();
+void MapRegion::addIncludeUnits(int unit_id) {
+  include_units_.push_back(unit_id);
+}
+
+void MapRegion::clearIncludeUnits() {
+  include_units_.clear();
 }
