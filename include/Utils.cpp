@@ -4,7 +4,6 @@
 void GetRand(int num, int min, int max, vector<int>& rand_data) {
   int sum = 0;
   for (int i = 0; i < num; ++i) {
-    // 生成1~10的随机数
     int cur_data = min + rand() % max;
     rand_data.push_back(cur_data);
     sum += cur_data;
@@ -44,6 +43,15 @@ void PrintAllUnit(map<int, BaseUnit> all_units, int time_stamp) {
   printf("--------------------------------------------------------\n");
   printf("Current time stamp: %d\n", time_stamp);
   printf("ID\tpositionX\tpositionY\tpositionZ\tspeed\tdirectionX\tdirectionY\tdirectionZ\n");
+  // auto unit = all_units.find(0)->second;
+  // printf("%d\t%.2f\t\t%.2f\t\t%.2f\t\t%.2f\t%.2f\t\t%.2f\t\t%.2f\n", unit.getId(),
+  //                                                           unit.getPositionX(),
+  //                                                           unit.getPositionY(),
+  //                                                           unit.getPositionZ(),
+  //                                                           unit.getSpeed(),
+  //                                                           unit.getDirectionX(),
+  //                                                           unit.getDirectionY(),
+  //                                                           unit.getDirectionZ());
   for (auto unit : all_units) {
     printf("%d\t%.2f\t\t%.2f\t\t%.2f\t\t%.2f\t%.2f\t\t%.2f\t\t%.2f\n", unit.second.getId(),
                                                             unit.second.getPositionX(),
@@ -55,6 +63,18 @@ void PrintAllUnit(map<int, BaseUnit> all_units, int time_stamp) {
                                                             unit.second.getDirectionZ());
   }
 }
+
+void PrintUnitRelated(map<int, BaseUnit> all_units) {
+  for (unsigned i = 0; i < all_units.size(); ++i) {
+    printf("Currently, the %d unit's related units are:\n", i);
+    auto related_id =  all_units.find(i)->second.getRelatedObjects();
+    for (unsigned j = 0; j < related_id.size(); ++j) {
+      printf("%d ", related_id[j]);
+    }
+    printf("\n");
+  }
+}
+
 // 初始化所有map region
 void InitAllRegions(map<int, MapRegion>& all_regions, int map_size_row, int map_size_col, int radius) {
   int region_num = 0;
@@ -66,42 +86,70 @@ void InitAllRegions(map<int, MapRegion>& all_regions, int map_size_row, int map_
   }
 }
 
-// 得到新的速度和方向
-vector<int> GetNewSpeedAndDirection(int id, map<int, BaseUnit> all_units) {
-  vector<int> new_speed_and_direction;
-  if (all_units.find(id)->second.getPriority() == 1) {
-    new_speed_and_direction.push_back(50 + rand() % 150);
-  } else if (all_units.find(id)->second.getPriority() == 2) {
-    new_speed_and_direction.push_back(10 + rand() % 40);
-  } else if (all_units.find(id)->second.getPriority() == 3) {
-    new_speed_and_direction.push_back(rand() % 10);
-  } else {
-    return new_speed_and_direction;
+void PrintRegions(map<int, MapRegion> all_regions) {
+  printf("--------------------------------------------------------\n");
+  printf("Start initial map region...\n");
+  printf("ID\tcenterX\tcenterY\tcenterZ\tradius\n");
+  for (unsigned i = 0; i < all_regions.size(); ++i) {
+    printf("%d\t%.2f\t%.2f\t%.2f\t%.2f\n", all_regions.find(i)->second.getID(),
+                                            all_regions.find(i)->second.getCenterX(),
+                                            all_regions.find(i)->second.getCenterY(),
+                                            all_regions.find(i)->second.getCenterZ(),
+                                            all_regions.find(i)->second.getRadius());
+    auto related_id = all_regions.find(i)->second.getRelatedMapRegions();
+    printf("The region %d related regions:", i);
+    for (unsigned j = 0; j < related_id.size(); ++j) {
+      printf("%d ", related_id[j]);
+    } 
+    printf("\nThe region %d sub related regions:", i);    
+    auto sub_related_id = all_regions.find(i)->second.getSubRelatedMapRegions();
+    for (unsigned j = 0; j < sub_related_id.size(); ++j) {
+      printf("%d ", sub_related_id[j]);
+    } 
+    printf("\n");
   }
-  new_speed_and_direction.insert(new_speed_and_direction.end(), {rand() % 10, rand() % 10, 0});
-
-  return new_speed_and_direction;
 }
 
 // 该map返回一个map，key是需要进行改变的时刻，该key对应的vector中包含该时刻需要改变的对象id，以及该对象的新速度和方向
-map<int, vector<int>> GetChangeTime(int rand_kind, int time, int num, int unit_num, map<int, BaseUnit> all_units) {
+map<int, vector<int>> GetChangeTime(int rand_kind, int time_length, int num, map<int, BaseUnit> all_units) {
 	map<int, vector<int>> change_times;
   if (rand_kind == 1) { // 均匀分布
     vector<int> time_stamps;
-    GetRand(num, 0, time, time_stamps);
+    GetRand(num, 1, time_length, time_stamps);
     sort(time_stamps.begin(), time_stamps.end());
-	  vector<int> id_new_speed_and_direction;
+    vector<int> ids;
+	  GetRand(num, 0, all_units.size(), ids);
+    vector<int> new_speed;
+    GetRand(num, 0, 150, new_speed);
+    vector<int> new_direction;
+    GetRand(2 * num, 0, 10, new_direction);
     for (int i = 0; i < num; ++i) {
-      int change_id = rand() % (unit_num);
-      id_new_speed_and_direction.push_back(change_id);
-      vector<int> new_speed_and_direction = GetNewSpeedAndDirection(change_id, all_units);
-      id_new_speed_and_direction.insert(id_new_speed_and_direction.end(), new_speed_and_direction.begin(), new_speed_and_direction.end());
-      change_times[time_stamps[i]] = id_new_speed_and_direction;
+      vector<int> new_speed_and_direction;
+      new_speed_and_direction.push_back(ids[i]);
+      if (all_units.find(ids[i])->second.getPriority() == 1) {
+        new_speed_and_direction.push_back(50 + new_speed[i] % 150);
+      } else if (all_units.find(ids[i])->second.getPriority() == 2) {
+        new_speed_and_direction.push_back(10 + new_speed[i] % 40);
+      } else if (all_units.find(ids[i])->second.getPriority() == 3) {
+        new_speed_and_direction.push_back(new_speed[i] % 10);
+      } else {
+        new_speed_and_direction.push_back(0);
+      }
+      new_speed_and_direction.push_back(new_direction[i]);
+      new_speed_and_direction.push_back(new_direction[i + num]);
+      new_speed_and_direction.push_back(0);
+      change_times[time_stamps[i]] = new_speed_and_direction;
     }
   }
   return change_times;
 }
 
+void PrintChangeTime(map<int, vector<int>> change_times) {
+  for (auto ite = change_times.begin(); ite != change_times.end(); ++ite) {
+    printf("The change time stamp is: %d, the unit id: %d, the new speed is: %d\n", ite->first, ite->second[0], ite->second[1]);
+    printf("The new direction is: %d, %d, %d\n", ite->second[2], ite->second[3], ite->second[4]);
+  }
+}
 
 // 计算两个单位之间的欧几里德距离
 double CalculateDistance(double x1, double y1, double z1, double x2, double y2, double z2) {
@@ -112,35 +160,61 @@ double CalculateDistance(double x1, double y1, double z1, double x2, double y2, 
 }
 
 // 找到距离unit最近的MapRegion，将该unit添加到该region的包含列表中
-void GetMapRegion(BaseUnit unit, map<int, MapRegion> map_regions) {
+void GetMapRegion(BaseUnit& unit, map<int, MapRegion>& map_regions) {
 	double unit_positionX = unit.getPositionX();
 	double unit_positionY = unit.getPositionY();
 	double unit_positionZ = unit.getPositionZ();
 	double min_distance = numeric_limits<double>::max();
 	int region_id = 0;
 
-	for (auto map_region : map_regions) {
-		double region_centerX = map_region.second.getCenterX();
-		double region_centerY = map_region.second.getCenterY();
-		double region_centerZ = map_region.second.getCenterZ();
-		auto distance = CalculateDistance(unit_positionX, unit_positionY, unit_positionZ,
-																			region_centerX, region_centerY, region_centerZ);
-		if (distance < min_distance) {
-			min_distance = distance;
-			region_id = map_region.first;
-		}
-	}
+  for (unsigned i = 0; i < map_regions.size(); ++i) {
+    auto map_region = map_regions.find(i)->second;
+    auto distance = CalculateDistance(unit_positionX, unit_positionY, unit_positionZ,
+                                      map_region.getCenterX(), map_region.getCenterY(), map_region.getCenterZ());
+    if (distance < min_distance) {
+      min_distance = distance;
+      region_id = i;
+    }                              
+  }
 	map_regions.find(region_id)->second.addIncludeUnits(unit.getId());
 }
 
 // 更新每个区域内的unit
-void RefreshMapRegionUnits(map<int, BaseUnit> all_units, map<int, MapRegion> all_regions) {
-	for (auto region : all_regions) {
-		region.second.clearIncludeUnits();
-	}
-	for (auto unit : all_units) {
-		GetMapRegion(unit.second, all_regions);
-	}
+void RefreshMapRegionUnits(map<int, BaseUnit>& all_units, map<int, MapRegion>& all_regions) {
+  for (unsigned i = 0; i < all_regions.size(); ++i) {
+    all_regions.find(i)->second.clearIncludeUnits();
+  }
+  for (unsigned i = 0; i < all_units.size(); ++i) {
+    GetMapRegion(all_units.find(i)->second, all_regions);
+  }
+}
+
+void PrintMapRegionUnits(map<int, MapRegion> all_regions) {
+  for (unsigned i = 0; i < all_regions.size(); ++i) {
+    printf("The %d region include unit:", i);
+    auto include_units = all_regions.find(i)->second.getIncludeUnits();
+    for (auto unit : include_units) {
+      printf("%d ", unit);
+    }
+    printf("\n");
+  }
+}
+
+void ChangeSpeed(BaseUnit &unit, double time_slice, double new_speed, double directionX, double directionY, double directionZ, double map_sizeX, double map_sizeY, double map_sizeZ) {
+  double direction = sqrt(pow(directionX, 2) + pow(directionY, 2) + pow(directionZ, 2));
+  double next_posX = unit.getPositionX() + new_speed * time_slice * directionX / direction;
+  double next_posY = unit.getPositionY() + new_speed * time_slice * directionY / direction;
+  double next_posZ = unit.getPositionZ() + new_speed * time_slice * directionZ / direction;
+  if(next_posX > map_sizeX || next_posX < 0) {
+      directionX = -directionX;
+  }
+  if(next_posY > map_sizeY || next_posY < 0){
+      directionY = -directionY;
+  }
+  if(next_posZ > map_sizeZ || next_posZ < 0){
+      directionZ = -directionZ;
+  }
+  unit.setDirection(directionX, directionY, directionZ);
 }
 
 // 判断两个unit是否连接
@@ -154,30 +228,32 @@ bool IsConnected(BaseUnit unit_fir, BaseUnit unit_sec) {
 }
 
 // 初始化所有unit的相关unit列表
-void InitRelatedUnits(map<int, BaseUnit> all_units) {
-	for (auto unit_fir : all_units) {
-		for (auto unit_sec : all_units) {
-			if (IsConnected(unit_fir.second, unit_sec.second) && unit_fir.first != unit_sec.first) {
-				unit_fir.second.addRelatedObjects(unit_sec.first);
-			}
-		}
-	}
+void InitRelatedUnits(map<int, BaseUnit>& all_units) {
+  for (unsigned i = 0; i < all_units.size(); ++i) {
+    for (unsigned j = 0; j < all_units.size(); ++j) {
+      if (IsConnected(all_units.find(i)->second, all_units.find(j)->second) && i != j) {
+        // printf("%d %d\n", i ,j);
+        all_units.find(i)->second.addRelatedObjects(j);
+      }
+    }
+  }
 }
 
 // 初始化所有region的相关region列表：
-void InitRelatedRegions(map<int, MapRegion> all_regions, int radius) {
-	for (auto region_fir : all_regions) {
-		for (auto region_sec : all_regions) {
-			double distance = CalculateDistance(region_fir.second.getCenterX(), region_fir.second.getCenterY(), region_fir.second.getCenterZ(), 
-                                          region_sec.second.getCenterX(), region_sec.second.getCenterY(), region_sec.second.getCenterZ());
-      if (distance <= CONNECTED_DISTANCE - 2 * radius) {
-				region_fir.second.addRelatedMapRegions(region_sec.first);
-			} else if (distance <= CONNECTED_DISTANCE + 2 * radius) {
-				region_fir.second.addSubRelatedMapRegions(region_sec.first);
+void InitRelatedRegions(map<int, MapRegion>& all_regions, int radius) {
+  for (unsigned i = 0; i < all_regions.size(); ++i) {
+    for (unsigned j = 0; j < all_regions.size(); ++j) {
+      double center_dis = CalculateDistance(all_regions.find(i)->second.getCenterX(), all_regions.find(i)->second.getCenterY(), all_regions.find(i)->second.getCenterZ(),
+                                            all_regions.find(j)->second.getCenterX(), all_regions.find(j)->second.getCenterY(), all_regions.find(j)->second.getCenterZ());
+      if (center_dis <= CONNECTED_DISTANCE - 2 * radius) {
+				all_regions.find(i)->second.addRelatedMapRegions(j);
+			} else if (center_dis <= CONNECTED_DISTANCE + 2 * radius) {
+				all_regions.find(i)->second.addSubRelatedMapRegions(j);
 			} 
-		}
-	}
+    }
+  }
 }
+
 // 清除units的连接关系，并删除所有与之关联的unit的列表中该unit的ID
 void ClearRelatedObjects(map<int, BaseUnit> units, map<int, BaseUnit> all_units) {
 	for (auto unit : units) {

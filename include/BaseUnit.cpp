@@ -45,36 +45,18 @@ BaseUnit::BaseUnit(int id, double speed, double directionX, double directionY, d
                   speed_(speed),
                   priority_(1) {}
 
-// 改变对象速度的方法实现
-void BaseUnit::changeSpeed(double time_slice, double new_speed, double directionX, double directionY, double directionZ, double map_sizeX, double map_sizeY, double map_sizeZ) {
-  this->speed_ = new_speed;
-  // 移动
-  double direction = sqrt(pow(directionX, 2) + pow(directionY, 2) + pow(directionZ, 2));
-  double next_posX = positionX_ + new_speed * time_slice * directionX / direction;
-  double next_posY = positionY_ + new_speed * time_slice * directionY / direction;
-  double next_posZ = positionZ_ + new_speed * time_slice * directionZ / direction;
-  // this.move(timeSlice)
-  if(next_posX > map_sizeX || next_posX < 0) {
-      directionX = -directionX;
-  }
-  if(next_posY > map_sizeY || next_posY < 0){
-      directionY = -directionY;
-  }
-  if(next_posZ > map_sizeZ || next_posZ < 0){
-      directionZ = -directionZ;
-  }
-  directionX_ = directionX;
-  directionY_ = directionY;
-  directionZ_ = directionZ;
-}
 
 // 移动对象的方法实现
 void BaseUnit::move(double time_slice) {
     // 根据速度和运动方向更新位置
   double direction = sqrt(pow(directionX_, 2) + pow(directionY_, 2) + pow(directionZ_, 2));
+  // printf("%f\n", direction);
+  // printf("%f\n", speed_ * time_slice * directionX_ / direction);
   positionX_ += speed_ * time_slice * directionX_ / direction;
+  // printf("%f\n", positionX_);
   positionY_ += speed_ * time_slice * directionY_ / direction;
   positionZ_ += speed_ * time_slice * directionZ_ / direction;
+  // printf("%f %f %f\n", getPositionX(), getPositionY(), getPositionZ());
 }
 
 // 属性的getter方法

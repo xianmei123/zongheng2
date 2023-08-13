@@ -16,7 +16,7 @@ public:
   BaseUnit(int id, double speed, double directionX, double directionY, double directionZ, double positionX, double positionY, double positionZ);
 
   // 改变速度
-  void changeSpeed(double time_slice, double new_speed, double directionX, double directionY, double directionZ, double map_sizeX, double map_sizeY, double map_sizeZ);    // 改变对象速度的方法
+  // void changeSpeed(double time_slice, double new_speed, double directionX, double directionY, double directionZ, double map_sizeX, double map_sizeY, double map_sizeZ);    // 改变对象速度的方法
   void move(double time_slice);  // 更新位置
 
   // 属性的getter和setter
