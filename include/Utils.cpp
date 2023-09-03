@@ -103,7 +103,7 @@ void saveAllUnitInfo(map<int, BaseUnit> all_units, int time_stamp) {
     std::string json_str = final_json.dump(4); // 4-space indentation for readability
 
     // Create a file with a unique name based on the time_stamp
-    std::string file_name = "unit_info_" + std::to_string(time_stamp) + ".json";
+    std::string file_name = 'data/' + "unit_info_" + std::to_string(time_stamp) + ".json";
     
     // Write the JSON string to the file
     std::ofstream output_file(file_name);
