@@ -33,7 +33,7 @@ void RefreshMapRegionUnits(map<int, BaseUnit>& all_units, map<int, MapRegion>& a
 void PrintMapRegionUnits(map<int, MapRegion> all_regions);
 void ChangeSpeed(BaseUnit& unit, double time_slice, double new_speed, double directionX, double directionY, double directionZ, double map_sizeX, double map_sizeY, double map_sizeZ);
 void InitRelatedUnits(map<int, BaseUnit>& all_units);
-void ClearRelatedObjects(map<int, BaseUnit> units, map<int, BaseUnit> all_units);
+void ClearRelatedObjects(vector<int> cur_ids, map<int, BaseUnit>& all_units);
 void InitRelatedRegions(map<int, MapRegion>& all_regions, int radius);
-void RefreshUnitsRelated(map<int, BaseUnit> units, map<int, BaseUnit> all_units, map<int, MapRegion> all_regions);
+void RefreshUnitsRelated(vector<int> cur_ids, map<int, BaseUnit>& all_units, map<int, MapRegion> all_regions);
 #endif // UTILS_H

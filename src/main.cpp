@@ -14,7 +14,7 @@
 using namespace std;
 int main() {
   // 所有类的总个数
-  int unit_num = 1000;
+  int unit_num = 100;
   int unit_kind = 4;
   vector<int> units;
   map<int, BaseUnit> all_units;
@@ -44,7 +44,7 @@ int main() {
 
   // 得到速度变化时刻表
   int rand_kind = 1;
-  int time_length = 3000;
+  int time_length = 300;
   int num = 100;
   int time_slice = 1;
   // for (auto unit : all_units) {
@@ -52,63 +52,50 @@ int main() {
   // }
   for (unsigned i = 0; i < all_units.size(); ++i) {
     if (all_units.find(i)->second.getPriority() != 4) {
-      all_units.find(i)->second.move(time_slice);
+      all_units.find(i)->second.move(time_slice, map_size_row, map_size_col, 0);
     }
   }
   //all_units.find(0)->second.move(time_slice);
   map<int, vector<int>> change_times = GetChangeTime(rand_kind, time_length, num, all_units);
-  // PrintChangeTime(change_times);
+  PrintChangeTime(change_times);
   for (int i = 1; i < time_length; ++i) {
-    // PrintAllUnit(all_units, i);
+    PrintAllUnit(all_units, i);
+    RefreshMapRegionUnits(all_units, all_regions);
+    vector<int> cur_ids;
+    if (i % 5 == 0) {
+      for (unsigned j = 0; j < all_units.size(); ++j) {
+        if (all_units.find(j)->second.getPriority() != 4) {
+          cur_ids.push_back(j);
+        }
+      }
+    } else if (i % 2 == 0) {
+      for (unsigned j = 0; j < all_units.size(); ++j) {
+        if (all_units.find(j)->second.getPriority() == 1 || all_units.find(j)->second.getPriority() == 2) {
+          cur_ids.push_back(j);
+        }
+      }
+    } else {
+      for (unsigned j = 0; j < all_units.size(); ++j) {
+        if (all_units.find(j)->second.getPriority() == 1) {
+          cur_ids.push_back(j);
+        }
+      }
+    }
+    RefreshUnitsRelated(cur_ids, all_units, all_regions);
+    PrintUnitRelated(all_units);
     if (change_times.find(i) != change_times.end()) {
-      printf("%d\n", change_times[i][0]);
-      auto unit = all_units.find(change_times[i][0])->second;
-      printf("niuma\n");
-      printf("%d %d %d %d \n", change_times[i][1], change_times[i][2], change_times[i][3], change_times[i][4]);
-      printf("%d\n", all_units.find(change_times[i][0])->second.getPriority());
-      if (all_units.find(change_times[i][0])->second.getPriority() != 4) {
-        printf("<<<<");
-        ChangeSpeed(all_units.find(change_times[i][0])->second, time_slice, change_times[i][1], change_times[1][2],
-                    change_times[i][3], change_times[i][4], map_size_row, map_size_col, 0);
+      auto unit = all_units.find(change_times.find(i)->second[0])->second;
+      if (unit.getPriority() != 4) {
+        ChangeSpeed(unit, time_slice, change_times.find(i)->second[1], change_times.find(i)->second[2],
+                    change_times.find(i)->second[3], change_times.find(i)->second[4], map_size_row, map_size_col, 0);
+      }
+    }
+    for (unsigned j = 0; j < all_units.size(); ++j) {
+      if (all_units.find(j)->second.getPriority() != 4) {
+        all_units.find(j)->second.move(time_slice, map_size_row, map_size_col, 0);
       }
     }
   }
-  // for (int i = 1; i < time_length; ++i) {
-  //   printf("what??");
-  //   // PrintAllUnit(all_units, i);
-  //   if (change_times.find(i) != change_times.end() && all_units.find(change_times[i][0])->second.getPriority() != 4) {
-  //     printf(">>>>");
-  //     all_units.find(change_times[i][0])->second.changeSpeed(time_slice, change_times[i][i], change_times[i][2], change_times[i][3], change_times[i][4],
-  //                                                           map_size_row, map_size_col, 0);
-  //   }
-  //   for (unsigned j = 0; j < all_units.size(); ++j) {
-  //     if (all_units.find(j)->second.getPriority() != 4) {
-  //       all_units.find(j)->second.move(time_slice);
-  //     }
-  //   }
-  //   printf(">>>>>..");
-  //   RefreshMapRegionUnits(all_units, all_regions);
-  //   map<int, BaseUnit> cur_units;
-  //   printf(">>>>>......");
-  //   if (i % 5 == 0) {
-  //     cur_units = all_units;
-  //   } else if (i % 2 == 0) {
-  //     for (auto unit : all_units) {
-  //       if (unit.second.getPriority() == 1 || unit.second.getPriority() == 2) {
-  //         cur_units.find(unit.first)->second = unit.second;
-  //       }
-  //     }
-  //   } else {
-  //     map<int, BaseUnit> units;
-  //     for (auto unit : all_units) {
-  //       if (unit.second.getPriority() == 1) {
-  //         cur_units.find(unit.first)->second = unit.second;
-  //       }
-  //     }
-  //   }
-  //   RefreshUnitsRelated(cur_units, all_units, all_regions);
-  //   printf(">>>>>.,.,..");
-  // }
 
   return 0;
 }

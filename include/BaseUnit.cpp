@@ -47,16 +47,26 @@ BaseUnit::BaseUnit(int id, double speed, double directionX, double directionY, d
 
 
 // 移动对象的方法实现
-void BaseUnit::move(double time_slice) {
+void BaseUnit::move(double time_slice, double map_sizeX, double map_sizeY, double map_sizeZ) {
     // 根据速度和运动方向更新位置
   double direction = sqrt(pow(directionX_, 2) + pow(directionY_, 2) + pow(directionZ_, 2));
   // printf("%f\n", direction);
   // printf("%f\n", speed_ * time_slice * directionX_ / direction);
+  double next_posX = positionX_ + speed_ * time_slice * directionX_ / direction;
+  double next_posY = positionY_ + speed_ * time_slice * directionY_ / direction;
+  double next_posZ = positionZ_ + speed_ * time_slice * directionZ_ / direction;
+  if (next_posX > map_sizeX || next_posX < 0) {
+    directionX_ = -directionX_;
+  }
+  if (next_posY > map_sizeY || next_posY < 0) {
+    directionY_ = -directionY_;
+  }
+  if (next_posZ > map_sizeZ || next_posZ < 0) {
+    directionZ_ = -directionZ_;
+  }
   positionX_ += speed_ * time_slice * directionX_ / direction;
-  // printf("%f\n", positionX_);
   positionY_ += speed_ * time_slice * directionY_ / direction;
   positionZ_ += speed_ * time_slice * directionZ_ / direction;
-  // printf("%f %f %f\n", getPositionX(), getPositionY(), getPositionZ());
 }
 
 // 属性的getter方法
@@ -165,9 +175,10 @@ void BaseUnit::clearRelatedObjects() {
 }  
 
 void BaseUnit::deleteRelatedObjects(int id) {
-  for (auto iter = related_objects_.begin(); iter != related_objects_.end(); ++iter) {
-    if (*iter == id) {
-      related_objects_.erase(iter);
-    }
-  }
+  // for (auto iter = related_objects_.begin(); iter != related_objects_.end(); ++iter) {
+  //   if (*iter == id) {
+  //     related_objects_.erase(id);
+  //   }
+  // }
+  related_objects_.erase(remove(related_objects_.begin(), related_objects_.end(), id), related_objects_.end());
 }

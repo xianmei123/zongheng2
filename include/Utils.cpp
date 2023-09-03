@@ -117,6 +117,10 @@ map<int, vector<int>> GetChangeTime(int rand_kind, int time_length, int num, map
     vector<int> time_stamps;
     GetRand(num, 1, time_length, time_stamps);
     sort(time_stamps.begin(), time_stamps.end());
+    // for (auto stamp : time_stamps) {
+    //   printf("%d ", stamp);
+    // }
+    // printf("\n");
     vector<int> ids;
 	  GetRand(num, 0, all_units.size(), ids);
     vector<int> new_speed;
@@ -205,14 +209,14 @@ void ChangeSpeed(BaseUnit &unit, double time_slice, double new_speed, double dir
   double next_posX = unit.getPositionX() + new_speed * time_slice * directionX / direction;
   double next_posY = unit.getPositionY() + new_speed * time_slice * directionY / direction;
   double next_posZ = unit.getPositionZ() + new_speed * time_slice * directionZ / direction;
-  if(next_posX > map_sizeX || next_posX < 0) {
-      directionX = -directionX;
+  if (next_posX > map_sizeX || next_posX < 0) {
+    directionX = -directionX;
   }
-  if(next_posY > map_sizeY || next_posY < 0){
-      directionY = -directionY;
+  if (next_posY > map_sizeY || next_posY < 0) {
+    directionY = -directionY;
   }
-  if(next_posZ > map_sizeZ || next_posZ < 0){
-      directionZ = -directionZ;
+  if (next_posZ > map_sizeZ || next_posZ < 0) {
+    directionZ = -directionZ;
   }
   unit.setDirection(directionX, directionY, directionZ);
 }
@@ -255,24 +259,28 @@ void InitRelatedRegions(map<int, MapRegion>& all_regions, int radius) {
 }
 
 // 清除units的连接关系，并删除所有与之关联的unit的列表中该unit的ID
-void ClearRelatedObjects(map<int, BaseUnit> units, map<int, BaseUnit> all_units) {
-	for (auto unit : units) {
-		for (auto id : unit.second.getRelatedObjects()) {
-			all_units.find(id)->second.deleteRelatedObjects(unit.first);
-		}
-		unit.second.clearRelatedObjects();
-	}
+void ClearRelatedObjects(vector<int> cur_ids, map<int, BaseUnit>& all_units) {
+  for (unsigned i = 0; i < cur_ids.size(); ++i) {
+    auto unit = all_units.find(cur_ids[i])->second;
+    // printf(",,,,\n");
+    for (unsigned j = 0; j < unit.getRelatedObjects().size(); ++j) {
+      // printf("%d ", unit.getRelatedObjects()[j]);
+      all_units.find(unit.getRelatedObjects()[j])->second.deleteRelatedObjects(cur_ids[i]);
+    } 
+    // printf("\n");
+    unit.clearRelatedObjects();
+  }
 }
 
 // 更新需要更新的优先级的unit的连接关系，按区域进行，第一个参数即需要更新的节点
-void RefreshUnitsRelated(map<int, BaseUnit> units, map<int, BaseUnit> all_units, map<int, MapRegion> all_regions) {
-	ClearRelatedObjects(units, all_units);
-	for (auto region : all_regions) {	// 遍历所有区域
-		auto region_units = region.second.getIncludeUnits();	// 得到当前区域包含unit
-		auto related_regions = region.second.getRelatedMapRegions();	// 得到全相关区域id
-		auto sub_related_regions = region.second.getSubRelatedMapRegions();	// 得到半相关区域id
-		for (auto region_unit : region_units) {	//遍历当前区域所有unit
-			if (units.find(region_unit) != units.end()) {	// 说明该区域中有需要更新的节点
+void RefreshUnitsRelated(vector<int> cur_ids, map<int, BaseUnit>& all_units, map<int, MapRegion> all_regions) {
+	ClearRelatedObjects(cur_ids, all_units);
+  for (unsigned i = 0; i < all_regions.size(); ++i) {
+    auto region_units = all_regions.find(i)->second.getIncludeUnits();// 得到当前区域包含unit
+		auto related_regions = all_regions.find(i)->second.getRelatedMapRegions();	// 得到全相关区域id
+		auto sub_related_regions = all_regions.find(i)->second.getSubRelatedMapRegions();	// 得到半相关区域id
+    for (auto region_unit : region_units) {	//遍历当前区域所有unit
+			if (find(cur_ids.begin(), cur_ids.end(), region_unit) != cur_ids.end()) {	// 说明该区域中有需要更新的节点
 				for (auto related_region : related_regions) {	// 首先遍历全相关区域
 					for (auto include_unit : all_regions.find(related_region)->second.getIncludeUnits()) {	// 遍历该区域内的节点
 						if (include_unit != region_unit) {	// 保证不把自己添加到相关节点中
