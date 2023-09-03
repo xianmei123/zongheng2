@@ -39,6 +39,7 @@ int main() {
   InitRelatedUnits(all_units);
   // PrintAllUnit(all_units, 0);
   // PrintUnitRelated(all_units);
+  saveAllUnitInfo(all_units, 0);   // 保存初始化的状态
   RefreshMapRegionUnits(all_units, all_regions);
   // PrintMapRegionUnits(all_regions);
 
@@ -83,6 +84,8 @@ int main() {
     }
     RefreshUnitsRelated(cur_ids, all_units, all_regions);
     PrintUnitRelated(all_units);
+    // PrintAllUnit(all_units, i);
+      saveAllUnitInfo(all_units, i);   // 保存每一时刻的状态
     if (change_times.find(i) != change_times.end()) {
       auto unit = all_units.find(change_times.find(i)->second[0])->second;
       if (unit.getPriority() != 4) {

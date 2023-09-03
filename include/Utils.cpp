@@ -1,5 +1,6 @@
 #include "Utils.h"
 
+
 // 生成num个随机数，最后一个元素是所有随机数的和
 void GetRand(int num, int min, int max, vector<int>& rand_data) {
   int sum = 0;
@@ -63,6 +64,60 @@ void PrintAllUnit(map<int, BaseUnit> all_units, int time_stamp) {
                                                             unit.second.getDirectionZ());
   }
 }
+
+// 保存每次更新的状态, 为前端提供格式化数据 (by qjx)
+void saveAllUnitInfo(map<int, BaseUnit> all_units, int time_stamp) {
+  // Create JSON arrays for 'entity' and 'relation'
+  json entity_array = json::array();
+  json relation_array = json::array();
+  for (auto unit : all_units) {
+    // Iterate through all_units and extract attributes to create JSON objects
+    for (const auto& unit : all_units) {
+        const BaseUnit& unit = unit.second;
+        json entity_obj = {
+            {"id", unit.getId()},
+            {"posX", unit.getPositionX()},
+            {"posY", unit.getPositionY()},
+            {"posZ", unit.getPositionZ()},
+            {"type", "Unit"}
+        };
+        entity_array.push_back(entity_obj);
+        // 相关的unit id
+        related_objects_ = unit.getRelatedObjects()
+        for (const auto& id : related_objects_) {
+          json relation_obj = {
+            {"entity1", unit.getId()},
+            {"entity2", id}
+          };
+          relation_array.push_back(relation_obj);
+        }
+    }
+
+    // Create the final JSON object with 'entity' and 'relation' fields
+    json final_json = {
+        {"entity", entity_array},
+        {"relation", relation_array}
+    };
+
+    // Convert the JSON to a formatted string
+    std::string json_str = final_json.dump(4); // 4-space indentation for readability
+
+    // Create a file with a unique name based on the time_stamp
+    std::string file_name = "data/" + "unit_info_" + std::to_string(time_stamp) + ".json";
+    
+    // Write the JSON string to the file
+    std::ofstream output_file(file_name);
+    if (output_file.is_open()) {
+        output_file << json_str;
+        output_file.close();
+        std::cout << "JSON data saved to " << file_name << std::endl;
+    } else {
+        std::cerr << "Failed to open file for writing: " << file_name << std::endl;
+    }
+
+  }
+}
+
 
 void PrintUnitRelated(map<int, BaseUnit> all_units) {
   for (unsigned i = 0; i < all_units.size(); ++i) {
