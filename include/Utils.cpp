@@ -79,7 +79,7 @@ void saveAllUnitInfo(map<int, BaseUnit> all_units, int time_stamp) {
             {"posX", unit.getPositionX()},
             {"posY", unit.getPositionY()},
             {"posZ", unit.getPositionZ()},
-            {"type", 'Unit'}
+            {"type", "Unit"}
         };
         entity_array.push_back(entity_obj);
         // 相关的unit id
@@ -103,7 +103,7 @@ void saveAllUnitInfo(map<int, BaseUnit> all_units, int time_stamp) {
     std::string json_str = final_json.dump(4); // 4-space indentation for readability
 
     // Create a file with a unique name based on the time_stamp
-    std::string file_name = 'data/' + "unit_info_" + std::to_string(time_stamp) + ".json";
+    std::string file_name = "data/" + "unit_info_" + std::to_string(time_stamp) + ".json";
     
     // Write the JSON string to the file
     std::ofstream output_file(file_name);
