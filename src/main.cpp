@@ -39,6 +39,7 @@ int main() {
   InitRelatedUnits(all_units);
   // PrintAllUnit(all_units, 0);
   // PrintUnitRelated(all_units);
+  saveAllUnitInfo(all_units, 0);   // 保存初始化的状态
   RefreshMapRegionUnits(all_units, all_regions);
   // PrintMapRegionUnits(all_regions);
 
@@ -60,6 +61,7 @@ int main() {
   // PrintChangeTime(change_times);
   for (int i = 1; i < time_length; ++i) {
     // PrintAllUnit(all_units, i);
+      saveAllUnitInfo(all_units, i);   // 保存每一时刻的状态
     if (change_times.find(i) != change_times.end()) {
       printf("%d\n", change_times[i][0]);
       auto unit = all_units.find(change_times[i][0])->second;

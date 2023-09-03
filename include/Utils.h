@@ -13,6 +13,8 @@
 #include <map>
 #include <algorithm>
 #include <time.h>
+#include <nlohmann/json.hpp>
+#include <fstream>
 
 using namespace std;
 
@@ -36,4 +38,7 @@ void InitRelatedUnits(map<int, BaseUnit>& all_units);
 void ClearRelatedObjects(map<int, BaseUnit> units, map<int, BaseUnit> all_units);
 void InitRelatedRegions(map<int, MapRegion>& all_regions, int radius);
 void RefreshUnitsRelated(map<int, BaseUnit> units, map<int, BaseUnit> all_units, map<int, MapRegion> all_regions);
+
+// 保存每次更新的状态 (by qjx)
+void saveAllUnitInfo(map<int, BaseUnit> all_units, int time_stamp);
 #endif // UTILS_H
