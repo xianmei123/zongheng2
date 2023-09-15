@@ -14,7 +14,7 @@
 using namespace std;
 int main() {
   // 所有类的总个数
-  int unit_num = 100;
+  int unit_num = 300;
   int unit_kind = 4;
   vector<int> units;
   map<int, BaseUnit> all_units;
@@ -37,15 +37,15 @@ int main() {
   // PrintRegions(all_regions);
   InitAllUnits(units, all_units, map_size_row, map_size_col);
   InitRelatedUnits(all_units);
-  // PrintAllUnit(all_units, 0);
-  // PrintUnitRelated(all_units);
-  saveAllUnitInfo(all_units, 0);   // 保存初始化的状态
+  PrintAllUnit(all_units, 0);
+  PrintUnitRelated(all_units);
+  SaveAllUnitInfo(all_units, 0);   // 保存初始化的状态
   RefreshMapRegionUnits(all_units, all_regions);
   // PrintMapRegionUnits(all_regions);
 
   // 得到速度变化时刻表
   int rand_kind = 1;
-  int time_length = 300;
+  int time_length = 50;
   int num = 100;
   int time_slice = 1;
   // for (auto unit : all_units) {
@@ -57,10 +57,10 @@ int main() {
     }
   }
   //all_units.find(0)->second.move(time_slice);
-  map<int, vector<int>> change_times = GetChangeTime(rand_kind, time_length, num, all_units);
+  map<int, map<int, vector<int>>> change_times = GetChangeTime(rand_kind, time_length, num, all_units);
   PrintChangeTime(change_times);
   for (int i = 1; i < time_length; ++i) {
-    PrintAllUnit(all_units, i);
+    // PrintAllUnit(all_units, i);
     RefreshMapRegionUnits(all_units, all_regions);
     vector<int> cur_ids;
     if (i % 5 == 0) {
@@ -84,13 +84,16 @@ int main() {
     }
     RefreshUnitsRelated(cur_ids, all_units, all_regions);
     PrintUnitRelated(all_units);
-    // PrintAllUnit(all_units, i);
-      saveAllUnitInfo(all_units, i);   // 保存每一时刻的状态
+    PrintAllUnit(all_units, i);
+    SaveAllUnitInfo(all_units, i);   // 保存每一时刻的状态
     if (change_times.find(i) != change_times.end()) {
-      auto unit = all_units.find(change_times.find(i)->second[0])->second;
-      if (unit.getPriority() != 4) {
-        ChangeSpeed(unit, time_slice, change_times.find(i)->second[1], change_times.find(i)->second[2],
-                    change_times.find(i)->second[3], change_times.find(i)->second[4], map_size_row, map_size_col, 0);
+      auto units = change_times.find(i)->second;
+      for (auto unit_id : units) {
+        auto unit = all_units.find(unit_id.first)->second;
+        if (unit.getPriority() != 4) {
+          ChangeSpeed(unit, time_slice, unit_id.second[0], unit_id.second[1],
+                      unit_id.second[2], unit_id.second[3], map_size_row, map_size_col, 0);
+        }
       }
     }
     for (unsigned j = 0; j < all_units.size(); ++j) {

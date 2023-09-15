@@ -66,58 +66,50 @@ void PrintAllUnit(map<int, BaseUnit> all_units, int time_stamp) {
 }
 
 // 保存每次更新的状态, 为前端提供格式化数据 (by qjx)
-void saveAllUnitInfo(map<int, BaseUnit> all_units, int time_stamp) {
+void SaveAllUnitInfo(map<int, BaseUnit> all_units, int time_stamp) {
+  using json = nlohmann::json;
   // Create JSON arrays for 'entity' and 'relation'
   json entity_array = json::array();
   json relation_array = json::array();
-  for (auto unit : all_units) {
-    // Iterate through all_units and extract attributes to create JSON objects
-    for (const auto& unit : all_units) {
-        const BaseUnit& unit = unit.second;
-        json entity_obj = {
-            {"id", unit.getId()},
-            {"posX", unit.getPositionX()},
-            {"posY", unit.getPositionY()},
-            {"posZ", unit.getPositionZ()},
-            {"type", "Unit"}
-        };
-        entity_array.push_back(entity_obj);
-        // 相关的unit id
-        related_objects_ = unit.getRelatedObjects()
-        for (const auto& id : related_objects_) {
-          json relation_obj = {
-            {"entity1", unit.getId()},
-            {"entity2", id}
-          };
-          relation_array.push_back(relation_obj);
-        }
-    }
-
-    // Create the final JSON object with 'entity' and 'relation' fields
-    json final_json = {
-        {"entity", entity_array},
-        {"relation", relation_array}
+  for (unsigned i = 0; i < all_units.size(); ++i) {
+    auto unit = all_units.find(i)->second;
+    json entity_obj = {
+      {"id", unit.getId()},
+      {"posX", unit.getPositionX()},
+      {"posY", unit.getPositionY()},
+      {"posZ", unit.getPositionZ()},
+      {"type", "Unit"}
     };
-
-    // Convert the JSON to a formatted string
-    std::string json_str = final_json.dump(4); // 4-space indentation for readability
-
-    // Create a file with a unique name based on the time_stamp
-    std::string file_name = "data/" + "unit_info_" + std::to_string(time_stamp) + ".json";
-    
-    // Write the JSON string to the file
-    std::ofstream output_file(file_name);
-    if (output_file.is_open()) {
-        output_file << json_str;
-        output_file.close();
-        std::cout << "JSON data saved to " << file_name << std::endl;
-    } else {
-        std::cerr << "Failed to open file for writing: " << file_name << std::endl;
+    entity_array.push_back(entity_obj);
+    auto related_objects = unit.getRelatedObjects();
+    for (auto related_id : related_objects) {
+      json relation_obj = {
+        {"entity1", unit.getId()},
+        {"entity2", related_id}
+      };
+      relation_array.push_back(relation_obj);
     }
-
+    json final_json = {
+      {"entity", entity_array},
+      {"relation", relation_array}
+    };
+     // Convert the JSON to a formatted string
+    string json_str = final_json.dump(2); // 2-space indentation for readability
+    // Create a file with a unique name based on the time_stamp
+    string folder = "/home/luyao/zongheng/data/";
+    string file_name = "unit_info_" + to_string(time_stamp) + ".json";
+    // Write the JSON string to the file
+    ofstream output_file;
+    output_file.open(folder + file_name, ios::out);
+    if (!output_file.is_open()) {
+      cerr << "Failed to open file for writing: " << file_name << std::endl;
+    } else {
+      output_file << json_str;
+      output_file.close();
+      // cout << "JSON data saved to " << file_name << std::endl;
+    }
   }
 }
-
 
 void PrintUnitRelated(map<int, BaseUnit> all_units) {
   for (unsigned i = 0; i < all_units.size(); ++i) {
@@ -166,25 +158,22 @@ void PrintRegions(map<int, MapRegion> all_regions) {
 }
 
 // 该map返回一个map，key是需要进行改变的时刻，该key对应的vector中包含该时刻需要改变的对象id，以及该对象的新速度和方向
-map<int, vector<int>> GetChangeTime(int rand_kind, int time_length, int num, map<int, BaseUnit> all_units) {
-	map<int, vector<int>> change_times;
+map<int, map<int, vector<int>>> GetChangeTime(int rand_kind, int time_length, int num, map<int, BaseUnit> all_units) {
+  map<int, map<int, vector<int>>> change_times;
   if (rand_kind == 1) { // 均匀分布
     vector<int> time_stamps;
     GetRand(num, 1, time_length, time_stamps);
     sort(time_stamps.begin(), time_stamps.end());
-    // for (auto stamp : time_stamps) {
-    //   printf("%d ", stamp);
-    // }
-    // printf("\n");
     vector<int> ids;
 	  GetRand(num, 0, all_units.size(), ids);
     vector<int> new_speed;
     GetRand(num, 0, 150, new_speed);
     vector<int> new_direction;
     GetRand(2 * num, 0, 10, new_direction);
-    for (int i = 0; i < num; ++i) {
+    map<int, vector<int>> change_objs;
+    int cur_time_stamp = time_stamps[0];
+    for (int i = 0; i < num - 1; ++i) {
       vector<int> new_speed_and_direction;
-      new_speed_and_direction.push_back(ids[i]);
       if (all_units.find(ids[i])->second.getPriority() == 1) {
         new_speed_and_direction.push_back(50 + new_speed[i] % 150);
       } else if (all_units.find(ids[i])->second.getPriority() == 2) {
@@ -197,16 +186,48 @@ map<int, vector<int>> GetChangeTime(int rand_kind, int time_length, int num, map
       new_speed_and_direction.push_back(new_direction[i]);
       new_speed_and_direction.push_back(new_direction[i + num]);
       new_speed_and_direction.push_back(0);
-      change_times[time_stamps[i]] = new_speed_and_direction;
+      change_objs[ids[i]] = new_speed_and_direction;
+      if (cur_time_stamp != time_stamps[i + 1]) {
+        if (i == num - 2) break;
+        change_times[cur_time_stamp] = change_objs;
+        cur_time_stamp = time_stamps[i + 1];
+        change_objs.clear();
+      }
+    }
+    vector<int> new_speed_and_direction;
+    if (all_units.find(ids[num - 1])->second.getPriority() == 1) {
+      new_speed_and_direction.push_back(50 + new_speed[num - 1] % 150);
+    } else if (all_units.find(ids[num - 1])->second.getPriority() == 2) {
+      new_speed_and_direction.push_back(10 + new_speed[num - 1] % 40);
+    } else if (all_units.find(ids[num - 1])->second.getPriority() == 3) {
+      new_speed_and_direction.push_back(new_speed[num - 1] % 10);
+    } else {
+      new_speed_and_direction.push_back(0);
+    }
+    new_speed_and_direction.push_back(new_direction[num - 1]);
+    new_speed_and_direction.push_back(new_direction[2 * num - 1]);
+    new_speed_and_direction.push_back(0);
+    if (cur_time_stamp == time_stamps[num - 1]) {
+      change_objs[ids[num - 1]] = new_speed_and_direction;
+      change_times[cur_time_stamp] = change_objs;
+    } else {
+      change_times[cur_time_stamp] = change_objs;
+      change_objs.clear();
+      change_objs[ids[num - 1]] = new_speed_and_direction;
+      change_times[time_stamps[num - 1]] = change_objs;
     }
   }
   return change_times;
 }
 
-void PrintChangeTime(map<int, vector<int>> change_times) {
+void PrintChangeTime(map<int, map<int, vector<int>>> change_times) {
   for (auto ite = change_times.begin(); ite != change_times.end(); ++ite) {
-    printf("The change time stamp is: %d, the unit id: %d, the new speed is: %d\n", ite->first, ite->second[0], ite->second[1]);
-    printf("The new direction is: %d, %d, %d\n", ite->second[2], ite->second[3], ite->second[4]);
+    printf("The change time stamp is: %d\n", ite->first);
+    auto change_objs = ite->second;
+    for (auto iter = change_objs.begin(); iter != change_objs.end(); ++iter) {
+      printf("the unit id: %d, the new speed is: %d\n", iter->first, iter->second[0]);
+      printf("The new direction is: %d, %d, %d\n", iter->second[1], iter->second[2], iter->second[3]);
+    }
   }
 }
 
@@ -323,13 +344,41 @@ void ClearRelatedObjects(vector<int> cur_ids, map<int, BaseUnit>& all_units) {
       all_units.find(unit.getRelatedObjects()[j])->second.deleteRelatedObjects(cur_ids[i]);
     } 
     // printf("\n");
-    unit.clearRelatedObjects();
+    all_units.find(cur_ids[i])->second.clearRelatedObjects();
+    // for (auto related_obj : unit.getRelatedObjects()) {
+    //   printf("%d ", related_obj);
+    // }
+    // printf("\n");
   }
 }
 
 // 更新需要更新的优先级的unit的连接关系，按区域进行，第一个参数即需要更新的节点
 void RefreshUnitsRelated(vector<int> cur_ids, map<int, BaseUnit>& all_units, map<int, MapRegion> all_regions) {
 	ClearRelatedObjects(cur_ids, all_units);
+  // printf("%p\n", &(all_units.find(1)->second));
+  // for (unsigned i = 0; i < cur_ids.size(); ++i) {
+  //   auto unit = all_units.find(cur_ids[i])->second;
+  //   // printf(",,,,\n");
+  //   for (unsigned j = 0; j < unit.getRelatedObjects().size(); ++j) {
+  //     // printf("%d ", unit.getRelatedObjects()[j]);
+  //     all_units.find(unit.getRelatedObjects()[j])->second.deleteRelatedObjects(cur_ids[i]);
+  //   } 
+  //   // printf("\n");
+  //   unit.clearRelatedObjects();
+  //   if (i == 1) {
+  //     // for (auto related_obj : unit.getRelatedObjects()) {
+  //     //   printf("*%d ", related_obj);
+  //     // }
+  //     printf("unit ptr %p\n", &unit);
+  //   }
+  // }
+
+  // auto unit = all_units.find(cur_ids[0])->second;
+  // printf("related_objs ptr %p\n",  &unit);
+  // for (auto related_obj : unit.getRelatedObjects()) {
+  //   printf("%d ", related_obj);
+  // }
+  // printf("\n");
   for (unsigned i = 0; i < all_regions.size(); ++i) {
     auto region_units = all_regions.find(i)->second.getIncludeUnits();// 得到当前区域包含unit
 		auto related_regions = all_regions.find(i)->second.getRelatedMapRegions();	// 得到全相关区域id

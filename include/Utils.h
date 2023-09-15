@@ -6,6 +6,7 @@
 #include "FlightUnit.h"
 #include "GroundUnit.h"
 #include "NonMovableUnit.h"
+#include "../../usr/local/include/json.hpp"
 #include <vector>
 #include <cmath>
 #include <cstdlib>
@@ -13,7 +14,6 @@
 #include <map>
 #include <algorithm>
 #include <time.h>
-#include <nlohmann/json.hpp>
 #include <fstream>
 
 using namespace std;
@@ -24,11 +24,12 @@ using namespace std;
 void GetRand(int num, int min, int max, vector<int>& rand_data);
 void InitAllUnits(vector<int> units, map<int, BaseUnit>& all_units, int map_size_row, int map_size_col);
 void PrintAllUnit(map<int, BaseUnit> all_units, int time_stamp);
+void SaveAllUnitInfo(map<int, BaseUnit> all_units, int time_stamp);
 void PrintUnitRelated(map<int, BaseUnit> all_units);
 void InitAllRegions(map<int, MapRegion>& all_regions, int map_size_row, int map_size_col, int radius);
 void PrintRegions(map<int, MapRegion> all_regions);
-map<int, vector<int>> GetChangeTime(int rand_kind, int time, int num, map<int, BaseUnit> all_units);
-void PrintChangeTime(map<int, vector<int>> change_times);
+map<int, map<int, vector<int>>> GetChangeTime(int rand_kind, int time_length, int num, map<int, BaseUnit> all_units);
+void PrintChangeTime(map<int, map<int, vector<int>>> change_times);
 double CalculateDistance(double x1, double y1, double z1, double x2, double y2, double z2);
 void GetMapRegion(BaseUnit& unit, map<int, MapRegion>& map_regions);
 void RefreshMapRegionUnits(map<int, BaseUnit>& all_units, map<int, MapRegion>& all_regions);
@@ -37,12 +38,5 @@ void ChangeSpeed(BaseUnit& unit, double time_slice, double new_speed, double dir
 void InitRelatedUnits(map<int, BaseUnit>& all_units);
 void ClearRelatedObjects(vector<int> cur_ids, map<int, BaseUnit>& all_units);
 void InitRelatedRegions(map<int, MapRegion>& all_regions, int radius);
-<<<<<<< HEAD
 void RefreshUnitsRelated(vector<int> cur_ids, map<int, BaseUnit>& all_units, map<int, MapRegion> all_regions);
-=======
-void RefreshUnitsRelated(map<int, BaseUnit> units, map<int, BaseUnit> all_units, map<int, MapRegion> all_regions);
-
-// 保存每次更新的状态 (by qjx)
-void saveAllUnitInfo(map<int, BaseUnit> all_units, int time_stamp);
->>>>>>> fa2b146d67b4338c3844f64f217c8d943a0cc277
 #endif // UTILS_H

@@ -172,6 +172,8 @@ void BaseUnit::addRelatedObjects(int id) {
 
 void BaseUnit::clearRelatedObjects() {
   related_objects_.clear();
+  related_objects_.shrink_to_fit();
+  // printf("**%d\n", related_objects_.size());
 }  
 
 void BaseUnit::deleteRelatedObjects(int id) {
@@ -180,5 +182,14 @@ void BaseUnit::deleteRelatedObjects(int id) {
   //     related_objects_.erase(id);
   //   }
   // }
+  // printf("*%d\n", id);
+  // for (auto obj : related_objects_) {
+  //   printf("%d ", obj);
+  // }
+  // printf("\n");
   related_objects_.erase(remove(related_objects_.begin(), related_objects_.end(), id), related_objects_.end());
+  // for (auto obj : related_objects_) {
+  //   printf("%d ", obj);
+  // }
+  // printf("\n");
 }
