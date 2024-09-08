@@ -32,8 +32,8 @@ struct Vertex {
 	int padding;
 
 
-	Vertex(const glm::vec3& position, const glm::vec3& color)
-		: position(position), color(color) {}
+	Vertex(const glm::vec3& position, const glm::vec3& color, int camps)
+		: position(position), color(color), camps(camps) {}
 
 	Vertex()
 		: position(0.0f), color(0.0f), status(0), camps(0), padding(0) {}
@@ -81,7 +81,7 @@ public:
 	void PrintDataChunk(DataChunk dataChunk) {
 		Vertex* vertices = dataChunk.vertices;
 		for (int i = 0; i < dataChunk.unit_count; i++) {
-			printf("status: %d, positions: %f\t%f\t%f, color: %f\t%f\t%f\n", vertices[i].status, vertices[i].position.x, vertices[i].position.y, vertices[i].position.z,
+			printf("camp: %d, status: %d, positions: %f\t%f\t%f, color: %f\t%f\t%f\n", vertices[i].camps, vertices[i].status, vertices[i].position.x, vertices[i].position.y, vertices[i].position.z,
 																			vertices[i].color.x, vertices[i].color.y, vertices[i].color.z);
 		}
 	}
@@ -146,7 +146,7 @@ public:
 					string type = root["entity"][i]["type"].asString();
 					glm::vec3 pos = glm::vec3(posX, posY, posZ);
 					glm::vec3 color = type == "Unit" ? glm::vec3(1, 0, 0) : glm::vec3(0, 1, 0);
-					Vertex vertex = Vertex(pos, color);
+					Vertex vertex = Vertex(pos, color, 0);
 					vertices.push_back(vertex);
 					
 			
@@ -247,7 +247,7 @@ public:
 				dataChunkBuffer.pop();
 				static int count = 0;
 				std::cout << "Consumed a DataChunk: " << count++ << std::endl;
-				// PrintDataChunk(chunk);
+				//PrintDataChunk(chunk);
 				break;
 			}
 		}

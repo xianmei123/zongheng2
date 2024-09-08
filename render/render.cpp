@@ -45,16 +45,23 @@ float near = 0.1f, far = 100.0f;
 //float leftBorder = -6.4f, rightBorder = 6.4f;
 //float bottomBorder = -3.2f, topBorder = 3.2f;
 
-float leftBorder = -12.8f, rightBorder = 12.8f;
+//float leftBorder = -12.8f, rightBorder = 12.8f;
+float leftBorder = -6.59f, rightBorder = 6.59f;
 float bottomBorder = -6.59f, topBorder = 6.59f;
 
 float maxHeight = topBorder / 4.0f;
+float minHeight = topBorder / 16.0f;
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
 int seconds = 0;
+
+float renderSpeed = 1.0f;
+
+int previousKeyStateE = GLFW_RELEASE;
+int previousKeyStateQ = GLFW_RELEASE;
 
 Render::Render()
 {
@@ -130,10 +137,10 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
 
     float mapVertices[] = {
         // positions          // colors           
-         rightBorder,  topBorder, -1.0f,   1.0f, 1.0f, // top right
-         rightBorder, bottomBorder, -1.0f,   1.0f, 0.0f, // bottom right
-         leftBorder, bottomBorder, -1.0f,   0.0f, 0.0f, // bottom left
-         leftBorder, topBorder, -1.0f,   0.0f, 1.0f  // top left 
+         12.8f,  topBorder, -1.0f,   1.0f, 1.0f, // top right
+         12.8f, bottomBorder, -1.0f,   1.0f, 0.0f, // bottom right
+         -12.8f, bottomBorder, -1.0f,   0.0f, 0.0f, // bottom left
+         -12.8f, topBorder, -1.0f,   0.0f, 1.0f  // top left 
     };
     unsigned int indices[] = {
         0, 1, 3, // first triangle
@@ -162,6 +169,8 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     // color  attribute
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+   
 
     // load and create a texture 
     // -------------------------
@@ -195,9 +204,9 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     // Open multiple threads to parse data
     // -------------------------------------------------------------------------------
     Data data;
-    for (int i = 0; i < 5; i++) {
+   /* for (int i = 0; i < 5; i++) {
         data.getDataAsyc();
-    }
+    }*/
 
 
     float oneSec = 0.0f;
@@ -240,7 +249,9 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
 
         // Get the point position of the next second
         // -------------------------------------------------------------------------------
-        if (currentDelta > 1.0f) {
+
+        float renderTime = 1.0 / renderSpeed;
+        if (currentDelta > renderTime) {
             freeDataChunk(currentChunk);
             currentChunk = nextChunk;
             if (useNewDataFetch) {
@@ -250,7 +261,7 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
 				nextChunk = data.getDataChunk();
 			}
             currentDelta = 0.0f;
-            cout << "fps: " << fps << endl;
+            cout << "frame per step: " << fps << ", speed: " << renderSpeed << "x" << endl;
             fps = 0;
         }
 
@@ -265,7 +276,7 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
         vector<int> indexLines = currentDelta < 0.5f ? currentChunk.indices : nextChunk.indices;*/
 
         for (int i = 0; i < currentChunk.unit_count; i++) {
-            vertices.push_back(calVertex(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta));
+            vertices.push_back(calVertex(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta / renderTime));
         }
 
         vector<int> indexLines = currentDelta < 0.5f ? vector<int>(currentChunk.indices, currentChunk.indices + currentChunk.unit_count) : vector<int>(nextChunk.indices, nextChunk.indices + nextChunk.unit_count);
@@ -330,6 +341,9 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
         glEnableVertexAttribArray(1);
 
+        glVertexAttribPointer(2, 1, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, camps));
+        glEnableVertexAttribArray(2);
+
         glDrawArrays(GL_POINTS, 0, vertices.size());
 
         float time2 = static_cast<float>(glfwGetTime());
@@ -365,6 +379,28 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow* window)
 {
+    int currentKeyStateE = glfwGetKey(window, GLFW_KEY_E);
+    if (currentKeyStateE == GLFW_PRESS && previousKeyStateE == GLFW_RELEASE) {
+        // 按键 E 刚被按下
+        if (renderSpeed < 3.0f) {
+            renderSpeed += 0.5f;
+            cout << renderSpeed << endl;
+        }
+    }
+    // 更新按键状态
+    previousKeyStateE = currentKeyStateE;
+
+    // 检测 Q 键
+    int currentKeyStateQ = glfwGetKey(window, GLFW_KEY_Q);
+    if (currentKeyStateQ == GLFW_PRESS && previousKeyStateQ == GLFW_RELEASE) {
+        // 按键 Q 刚被按下
+        if (renderSpeed > 0.5f) {
+            renderSpeed -= 0.5f;
+            cout << renderSpeed << endl;
+        }
+    }
+    // 更新按键状态
+    previousKeyStateQ = currentKeyStateQ;
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -376,6 +412,8 @@ void processInput(GLFWwindow* window)
         camera.ProcessKeyboard(LEFT, deltaTime, leftBorder, lef);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime, rightBorder, rig);
+
+
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -425,7 +463,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     if (yoffset < 0.f && (posX - yoffset * 0.1f + rig > rightBorder || posY - yoffset * 0.1f + top > topBorder)) {
         return;
     }
-    if (top - yoffset * topBorder * 0.01 >= maxHeight) return;
+    if (top - yoffset * topBorder * 0.01 >= maxHeight || top - yoffset * topBorder * 0.01 <= minHeight) return;
     lef += yoffset * rightBorder * 0.01;
     rig -= yoffset * rightBorder * 0.01;
     top -= yoffset * topBorder * 0.01;
@@ -436,8 +474,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 }
 
 Vertex calVertex(Vertex v1, Vertex v2, float p) {
-    glm::vec3 v = v1.position + (v2.position - v1.position) * p;
-    Vertex vertex(v, v1.color);
+    glm::vec3 v = (v1.position + (v2.position - v1.position) * p) / 2.5f * 6.4f;
+    Vertex vertex(v, v1.color, v1.camps);
     return vertex;
 }
 
