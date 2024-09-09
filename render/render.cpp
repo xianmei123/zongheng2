@@ -15,6 +15,11 @@
 #include "data_producer_multi.h"
 #include "render.h"
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -200,6 +205,14 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     }
     stbi_image_free(mapData);
 
+    //gui initial
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
+
 
     // Open multiple threads to parse data
     // -------------------------------------------------------------------------------
@@ -236,6 +249,33 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     float currentDelta = 0.0f;
     while (!glfwWindowShouldClose(window))
     {
+        //gui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        // Create UI for selecting render speed
+        ImGui::Begin("Render Speed Options");
+        ImGui::SetWindowSize(ImVec2(200, 150));
+        if (ImGui::RadioButton("0.2x", renderSpeed == 0.2f)) {
+            renderSpeed = 0.2f;
+        }
+        if (ImGui::RadioButton("0.5x", renderSpeed == 0.5f)) {
+            renderSpeed = 0.5f;
+        }
+        if (ImGui::RadioButton("1x", renderSpeed == 1.0f)) {
+            renderSpeed = 1.0f;
+        }
+        if (ImGui::RadioButton("2x", renderSpeed == 2.0f)) {
+            renderSpeed = 2.0f;
+        }
+        if (ImGui::RadioButton("3x", renderSpeed == 3.0f)) {
+            renderSpeed = 3.0f;
+        }
+        ImGui::End();
+
+
+
         fps++;
         // per-frame time logic
         // --------------------
@@ -357,12 +397,23 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
         time2 = static_cast<float>(glfwGetTime());*/
         //cout << "draw lines time : " << time2 - time1 << endl;
 
-
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+
+      
+
+     
     }
+
+    // Cleanup ImGui
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
