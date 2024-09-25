@@ -32,8 +32,8 @@ bool useNewDataFetch = true;
 
 
 // settings
-const unsigned int SCR_WIDTH = 1280;
-const unsigned int SCR_HEIGHT = 659;
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
 
 // camera
 OrthoCamera camera(glm::vec3(0.0f, 0.0f, 2.0f));
@@ -51,11 +51,11 @@ float near = 0.1f, far = 100.0f;
 //float bottomBorder = -3.2f, topBorder = 3.2f;
 
 //float leftBorder = -12.8f, rightBorder = 12.8f;
-float leftBorder = -6.59f, rightBorder = 6.59f;
-float bottomBorder = -6.59f, topBorder = 6.59f;
+float leftBorder = -10.0f, rightBorder =10.0f;
+float bottomBorder = -10.0f, topBorder = 10.0f;
 
 float maxHeight = topBorder / 4.0f;
-float minHeight = topBorder / 16.0f;
+float minHeight = topBorder / 32.0f;
 
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
@@ -127,7 +127,9 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     // ------------------------------------
 
 
-    Shader ourShader((RenderPath + "/shader/shader.vs").c_str(), (RenderPath + "/shader/shader.fs").c_str());
+    //Shader ourShader((RenderPath + "/shader/shader.vs").c_str(), (RenderPath + "/shader/shader.fs").c_str(), (RenderPath + "/shader/shader.gs").c_str());
+
+    Shader ourShader((RenderPath + "/shader/shader.vs").c_str(), (RenderPath + "/shader/shader.fs").c_str(), (RenderPath + "/shader/shaderpoint.gs").c_str());
     Shader mapShader((RenderPath + "/shader/map.vs").c_str(), (RenderPath + "/shader/map.fs").c_str());
 
     glEnable(GL_PROGRAM_POINT_SIZE);
@@ -142,10 +144,10 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
 
     float mapVertices[] = {
         // positions          // colors           
-         12.8f,  topBorder, -1.0f,   1.0f, 1.0f, // top right
-         12.8f, bottomBorder, -1.0f,   1.0f, 0.0f, // bottom right
-         -12.8f, bottomBorder, -1.0f,   0.0f, 0.0f, // bottom left
-         -12.8f, topBorder, -1.0f,   0.0f, 1.0f  // top left 
+         rightBorder,  topBorder, -1.0f,   1.0f, 1.0f, // top right
+         rightBorder, bottomBorder, -1.0f,   1.0f, 0.0f, // bottom right
+         leftBorder, bottomBorder, -1.0f,   0.0f, 0.0f, // bottom left
+         leftBorder, topBorder, -1.0f,   0.0f, 1.0f  // top left 
     };
     unsigned int indices[] = {
         0, 1, 3, // first triangle
@@ -193,7 +195,7 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
     //unsigned char* mapData = stbi_load("../../../resources/map.jpg", &width, &height, &nrChannels, 0);
 
-    unsigned char* mapData = stbi_load((RenderPath + "/resources/newmap.png").c_str(), &width, &height, &nrChannels, 0);
+    unsigned char* mapData = stbi_load((RenderPath + "/resources/worldmap.png").c_str(), &width, &height, &nrChannels, 0);
     if (mapData)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, mapData);
@@ -249,6 +251,11 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     float currentDelta = 0.0f;
     while (!glfwWindowShouldClose(window))
     {
+
+       /* GLenum err;
+        while ((err = glGetError()) != GL_NO_ERROR) {
+            std::cout << "OpenGL error: " << err << std::endl;
+        }*/
         //gui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -381,8 +388,11 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
         glEnableVertexAttribArray(1);
 
-        glVertexAttribPointer(2, 1, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, camps));
+        glVertexAttribPointer(2, 1, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, status));
         glEnableVertexAttribArray(2);
+
+        glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, camps));
+        glEnableVertexAttribArray(3);
 
         glDrawArrays(GL_POINTS, 0, vertices.size());
 
@@ -507,26 +517,73 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    glm::vec3 Position = camera.getPosition();
-    float posX = camera.getAbs(Position.x);
-    float posY = camera.getAbs(Position.y);
-    //cout << "x : " << xoffset << "y : " << yoffset << endl;
-    if (yoffset < 0.f && (posX - yoffset * 0.1f + rig > rightBorder || posY - yoffset * 0.1f + top > topBorder)) {
+    //glm::vec3 Position = camera.getPosition();
+    //float posX = camera.getAbs(Position.x);
+    //float posY = camera.getAbs(Position.y);
+    ////cout << "x : " << xoffset << "y : " << yoffset << endl;
+    //if (yoffset < 0.f && (posX - yoffset * 0.1f + rig > rightBorder || posY - yoffset * 0.1f + top > topBorder)) {
+    //    return;
+    //}
+    //if (top - yoffset * topBorder * 0.01 >= maxHeight || top - yoffset * topBorder * 0.01 <= minHeight) return;
+    //lef += yoffset * rightBorder * 0.01;
+    //rig -= yoffset * rightBorder * 0.01;
+    //top -= yoffset * topBorder * 0.01;
+    //bottom += yoffset * topBorder * 0.01;
+
+    float zoomFactor = 0.1f;
+    float zoomAmount = yoffset * zoomFactor;
+
+    // Calculate the aspect ratio of the viewport
+    float aspectRatio = static_cast<float>(SCR_WIDTH) / static_cast<float>(SCR_HEIGHT);
+
+    // Adjust the orthographic projection bounds
+    float width = rig - lef;
+    float height = top - bottom;
+
+    // Update the bounds based on the zoom amount
+    width -= zoomAmount;
+    height -= zoomAmount / aspectRatio;
+
+    
+
+    // Ensure width and height remain positive
+    if (width <= 0.0f) width = 0.1f;
+    if (height <= 0.0f) height = 0.1f;
+
+    // Ensure height is within minHeight and maxHeight
+    if (height > maxHeight)
+    {
+        height = maxHeight;
         return;
     }
-    if (top - yoffset * topBorder * 0.01 >= maxHeight || top - yoffset * topBorder * 0.01 <= minHeight) return;
-    lef += yoffset * rightBorder * 0.01;
-    rig -= yoffset * rightBorder * 0.01;
-    top -= yoffset * topBorder * 0.01;
-    bottom += yoffset * topBorder * 0.01;
+    if (height < minHeight) 
+    {
+        height = minHeight;
+        return;
+    }
+
+    // Maintain aspect ratio
+    float centerX = (lef + rig) / 2.0f;
+    float centerY = (bottom + top) / 2.0f;
+
+    lef = centerX - width / 2.0f;
+    rig = centerX + width / 2.0f;
+    bottom = centerY - height / 2.0f;
+    top = centerY + height / 2.0f;
+
+    // Ensure the view frustum does not exceed the map borders
+    if (lef < leftBorder) lef = leftBorder;
+    if (rig > rightBorder) rig = rightBorder;
+    if (bottom < bottomBorder) bottom = bottomBorder;
+    if (top > topBorder) top = topBorder;
 
    // cout << "LEF : " << lef << "RIG : " << rig << endl;
     //camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
 Vertex calVertex(Vertex v1, Vertex v2, float p) {
-    glm::vec3 v = (v1.position + (v2.position - v1.position) * p) / 2.5f * 6.4f;
-    Vertex vertex(v, v1.color, v1.camps);
+    glm::vec3 v = (v1.position + (v2.position - v1.position) * p) * 4.0f;
+    Vertex vertex(v, v1.color, v1.camps, v1.status);
     return vertex;
 }
 

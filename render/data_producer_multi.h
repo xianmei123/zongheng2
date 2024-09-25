@@ -32,8 +32,8 @@ struct Vertex {
 	int padding;
 
 
-	Vertex(const glm::vec3& position, const glm::vec3& color, int camps)
-		: position(position), color(color), camps(camps) {}
+	Vertex(const glm::vec3& position, const glm::vec3& color, int camps, int status)
+		: position(position), color(color), camps(camps), status(status) {}
 
 	Vertex()
 		: position(0.0f), color(0.0f), status(0), camps(0), padding(0) {}
@@ -146,7 +146,7 @@ public:
 					string type = root["entity"][i]["type"].asString();
 					glm::vec3 pos = glm::vec3(posX, posY, posZ);
 					glm::vec3 color = type == "Unit" ? glm::vec3(1, 0, 0) : glm::vec3(0, 1, 0);
-					Vertex vertex = Vertex(pos, color, 0);
+					Vertex vertex = Vertex(pos, color, 0, 0);
 					vertices.push_back(vertex);
 					
 			
