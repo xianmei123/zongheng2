@@ -195,7 +195,8 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
     //unsigned char* mapData = stbi_load("../../../resources/map.jpg", &width, &height, &nrChannels, 0);
 
-    unsigned char* mapData = stbi_load((RenderPath + "/resources/worldmap.png").c_str(), &width, &height, &nrChannels, 0);
+    //unsigned char* mapData = stbi_load((RenderPath + "/resources/worldmap.png").c_str(), &width, &height, &nrChannels, 0);
+    unsigned char* mapData = stbi_load((RenderPath + "../../../worldmap.png").c_str(), &width, &height, &nrChannels, 0);
     if (mapData)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, mapData);
