@@ -261,7 +261,7 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
 
     if (useNewDataFetch) {
         currentChunk = data.getDataChunk(dataChunkBuffer, dataChunkMutex);
-
+        cout << "unit count: " << currentChunk.unit_count << endl;
         for (int i = 0; i < currentChunk.unit_count; i++) {
             probabilities.push_back(dis(gen));
             
@@ -361,7 +361,7 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
         //std::cout << "Skip Probability: " << skip_probability << std::endl;
 
         for (int i = 0; i < currentChunk.unit_count; i++) {
-            if (probabilities[i] > skip_probability) {  // 随机决定是否渲染该点
+            if (probabilities[i] > 0) {  // 随机决定是否渲染该点
                 vertices.push_back(calVertex(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta / renderTime));
             }
         }
@@ -623,5 +623,6 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 Vertex calVertex(Vertex v1, Vertex v2, float p) {
     glm::vec3 v = (v1.position + (v2.position - v1.position) * p) * 4.0f;
     Vertex vertex(v, v1.color, v1.camps, v1.status);
+    cout << v.x << " " << v.y << " " << v.z << endl;
     return vertex;
 }
