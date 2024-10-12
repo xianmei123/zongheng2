@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <thread>
+#include <random>  // 新增
 
 #include "stb_image.h"
 #include "shader.h"
@@ -51,7 +52,7 @@ float near = 0.1f, far = 100.0f;
 //float bottomBorder = -3.2f, topBorder = 3.2f;
 
 //float leftBorder = -12.8f, rightBorder = 12.8f;
-float leftBorder = -10.0f, rightBorder =10.0f;
+float leftBorder = -10.0f, rightBorder = 10.0f;
 float bottomBorder = -10.0f, topBorder = 10.0f;
 
 float maxHeight = topBorder / 4.0f;
@@ -177,7 +178,7 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-   
+
 
     // load and create a texture 
     // -------------------------
@@ -199,12 +200,24 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     unsigned char* mapData = stbi_load((RenderPath + "../../../worldmap.png").c_str(), &width, &height, &nrChannels, 0);
     if (mapData)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, mapData);
+        GLenum format;
+        if (nrChannels == 1)
+            format = GL_RED;
+        else if (nrChannels == 3)
+            format = GL_RGB;
+        else if (nrChannels == 4)
+            format = GL_RGBA;
+        else
+            format = GL_RGB; // 默认格式
+
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, mapData);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
     {
-        std::cout << "Failed to load texture" << std::endl;
+        std::cerr << "Failed to load texture from path: " << RenderPath + "../../../worldmap.png" << std::endl;
+        glfwTerminate();
+        return;
     }
     stbi_image_free(mapData);
 
@@ -220,9 +233,9 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     // Open multiple threads to parse data
     // -------------------------------------------------------------------------------
     Data data;
-   /* for (int i = 0; i < 5; i++) {
-        data.getDataAsyc();
-    }*/
+    /* for (int i = 0; i < 5; i++) {
+         data.getDataAsyc();
+     }*/
 
 
     float oneSec = 0.0f;
@@ -230,22 +243,36 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     float currentSec = 0.0f;
     int fps = 0;
 
-  
+
+    // 计算基础面积
+    float base_area = (rig - lef) * (top - bottom) * 0.5;
+
+    // 初始化随机数生成器
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis(0.0, 1.0);
 
     // Get the point positions of the first and second seconds
         // -------------------------------------------------------------------------------
     DataChunk currentChunk;
     DataChunk nextChunk;
 
+    vector<float> probabilities;
+
     if (useNewDataFetch) {
         currentChunk = data.getDataChunk(dataChunkBuffer, dataChunkMutex);
+
+        for (int i = 0; i < currentChunk.unit_count; i++) {
+            probabilities.push_back(dis(gen));
+            
+        }
         nextChunk = data.getDataChunk(dataChunkBuffer, dataChunkMutex);
     }
     else {
         currentChunk = data.getDataChunk();
         nextChunk = data.getDataChunk();
     }
-   
+
     //cout << currentChunk.indices.size() << "cur " << currentChunk.vertices.size() << endl;
     //cout << nextChunk.indices.size() << "nex " << nextChunk.vertices.size() << endl;
 
@@ -253,11 +280,11 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     while (!glfwWindowShouldClose(window))
     {
 
-       /* GLenum err;
-        while ((err = glGetError()) != GL_NO_ERROR) {
-            std::cout << "OpenGL error: " << err << std::endl;
-        }*/
-        //gui frame
+        /* GLenum err;
+         while ((err = glGetError()) != GL_NO_ERROR) {
+             std::cout << "OpenGL error: " << err << std::endl;
+         }*/
+         //gui frame
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -303,13 +330,13 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
             freeDataChunk(currentChunk);
             currentChunk = nextChunk;
             if (useNewDataFetch) {
-				nextChunk = data.getDataChunk(dataChunkBuffer, dataChunkMutex);
-			}
+                nextChunk = data.getDataChunk(dataChunkBuffer, dataChunkMutex);
+            }
             else {
-				nextChunk = data.getDataChunk();
-			}
+                nextChunk = data.getDataChunk();
+            }
             currentDelta = 0.0f;
-            cout << "frame per step: " << fps << ", speed: " << renderSpeed << "x" << endl;
+            std::cout << "frame per step: " << fps << ", speed: " << renderSpeed << "x" << std::endl;
             fps = 0;
         }
 
@@ -317,17 +344,32 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
 
         // Interpolate according to time based on the point position of the previous second and the next second
         // -------------------------------------------------------------------------------
-        vector<Vertex> vertices;
-       /* for (int i = 0; i < currentChunk.vertices.size(); i++) {
+        std::vector<Vertex> vertices;
+        /* for (int i = 0; i < currentChunk.vertices.size(); i++) {
             vertices.push_back(calVertex(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta));
         }
-        vector<int> indexLines = currentDelta < 0.5f ? currentChunk.indices : nextChunk.indices;*/
+        std::vector<int> indexLines = currentDelta < 0.5f ? currentChunk.indices : nextChunk.indices;*/
+
+        // 计算当前可视面积
+        float current_area = (rig - lef) * (top - bottom);
+        float scale_factor = current_area / base_area;
+        float skip_probability = (scale_factor - 1.0f) * 0.5f;  // 可调整的系数
+        if (skip_probability < 0.0f) skip_probability = 0.0f;
+        if (skip_probability > 0.6f) skip_probability = 0.7f;  // 最大跳过概率为70%
+
+        // 输出跳过概率（可选）
+        //std::cout << "Skip Probability: " << skip_probability << std::endl;
 
         for (int i = 0; i < currentChunk.unit_count; i++) {
-            vertices.push_back(calVertex(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta / renderTime));
+            if (probabilities[i] > skip_probability) {  // 随机决定是否渲染该点
+                vertices.push_back(calVertex(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta / renderTime));
+            }
         }
 
-        vector<int> indexLines = currentDelta < 0.5f ? vector<int>(currentChunk.indices, currentChunk.indices + currentChunk.unit_count) : vector<int>(nextChunk.indices, nextChunk.indices + nextChunk.unit_count);
+        std::vector<int> indexLines = currentDelta < 0.5f
+            ? std::vector<int>(currentChunk.indices, currentChunk.indices + currentChunk.unit_count)
+            : std::vector<int>(nextChunk.indices, nextChunk.indices + nextChunk.unit_count);
+
         // input
         // -----
         processInput(window);
@@ -414,11 +456,6 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
         // -------------------------------------------------------------------------------
         glfwSwapBuffers(window);
         glfwPollEvents();
-
-
-      
-
-     
     }
 
     // Cleanup ImGui
@@ -430,11 +467,12 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(2, VAO);
     glDeleteBuffers(2, VBO);
+    glDeleteBuffers(2, EBO);  // 确保EBO也被删除
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     glfwTerminate();
- 
+
 }
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
@@ -446,7 +484,7 @@ void processInput(GLFWwindow* window)
         // 按键 E 刚被按下
         if (renderSpeed < 3.0f) {
             renderSpeed += 0.5f;
-            cout << renderSpeed << endl;
+            std::cout << "Render Speed: " << renderSpeed << "x" << std::endl;
         }
     }
     // 更新按键状态
@@ -458,7 +496,7 @@ void processInput(GLFWwindow* window)
         // 按键 Q 刚被按下
         if (renderSpeed > 0.5f) {
             renderSpeed -= 0.5f;
-            cout << renderSpeed << endl;
+            std::cout << "Render Speed: " << renderSpeed << "x" << std::endl;
         }
     }
     // 更新按键状态
@@ -487,7 +525,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
     glViewport(0, 0, width, height);
     //cout << "width: " << width << "height: " << height << endl;
-    bottom = float(height) / float(width) * lef, top = float(height) / float(width) * rig;
+    bottom = float(height) / float(width) * lef;
+    top = float(height) / float(width) * rig;
 }
 
 
@@ -545,7 +584,6 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     width -= zoomAmount;
     height -= zoomAmount / aspectRatio;
 
-    
 
     // Ensure width and height remain positive
     if (width <= 0.0f) width = 0.1f;
@@ -557,7 +595,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
         height = maxHeight;
         return;
     }
-    if (height < minHeight) 
+    if (height < minHeight)
     {
         height = minHeight;
         return;
@@ -578,8 +616,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     if (bottom < bottomBorder) bottom = bottomBorder;
     if (top > topBorder) top = topBorder;
 
-   // cout << "LEF : " << lef << "RIG : " << rig << endl;
-    //camera.ProcessMouseScroll(static_cast<float>(yoffset));
+    // cout << "LEF : " << lef << "RIG : " << rig << endl;
+     //camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
 Vertex calVertex(Vertex v1, Vertex v2, float p) {
@@ -587,4 +625,3 @@ Vertex calVertex(Vertex v1, Vertex v2, float p) {
     Vertex vertex(v, v1.color, v1.camps, v1.status);
     return vertex;
 }
-
