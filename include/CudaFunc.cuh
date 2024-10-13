@@ -32,16 +32,6 @@ struct DataChunk {
     int unit_count;
 };
 
-extern "C" void cudaVoidInit(
-    double *g_positions, double *g_target_positions, double *g_speeds, double *g_directions, double *g_distances,
-    double *positions, double *target_positions, double *speeds, double *directions, double *distances,
-    int unit_num
-);
-
-extern "C" void cudaVoidFree(
-    double *g_positions, double *g_target_positions, double *g_speeds, double *g_directions, double *g_distances
-);
-
 extern "C" int cudaUpdatePositions(
     double *directions, double *positions, double *speeds, Vertex *vertices, int *indices, 
     double *g_directions, double *g_positions, double *g_speeds, Vertex *g_vertices, int *g_indices, int *g_status, int* g_unit_class,

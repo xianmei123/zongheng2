@@ -107,42 +107,6 @@ __global__ void unitUpdate(
     }
 }
 
-void cudaVoidInit(
-    double *g_positions, double *g_target_positions, double *g_speeds, double *g_directions, double *g_distances,
-    double *positions, double *target_positions, double *speeds, double *directions, double *distances,
-    int unit_num
-) {
-    cudaError_t err;
-
-    cudaMalloc(&g_positions,        sizeof(double) * 3 * unit_num);
-    cudaMalloc(&g_target_positions, sizeof(double) * 3 * unit_num);
-    cudaMalloc(&g_speeds,           sizeof(double) * unit_num);
-    cudaMalloc(&g_directions,       sizeof(double) * 3 * unit_num);
-    cudaMalloc(&g_distances,        sizeof(double) * 3 * unit_num);
-
-    cudaMemcpy(g_positions, positions,               sizeof(double) * 3 * unit_num, cudaMemcpyHostToDevice);
-    cudaMemcpy(g_target_positions, target_positions, sizeof(double) * 3 * unit_num, cudaMemcpyHostToDevice);
-    cudaMemcpy(g_speeds, speeds,                     sizeof(double) * unit_num, cudaMemcpyHostToDevice);
-    cudaMemcpy(g_directions, directions,             sizeof(double) * 3 * unit_num, cudaMemcpyHostToDevice);
-    cudaMemcpy(g_distances, distances,               sizeof(double) * 3 * unit_num, cudaMemcpyHostToDevice);
-
-    err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        std::cerr << "CUDA Init Error: " << cudaGetErrorString(err) << std::endl;
-        return;
-    }
-}
-
-void cudaVoidFree(
-    double *g_positions, double *g_target_positions, double *g_speeds, double *g_directions, double *g_distances
-) {
-    cudaFree(g_positions);
-    cudaFree(g_target_positions);
-    cudaFree(g_speeds);
-    cudaFree(g_directions);
-    cudaFree(g_distances);
-}
-
 int cudaUpdatePositions(
     double *directions, double *positions, double *speeds, Vertex *vertices, int *indices,
     double *g_directions, double *g_positions, double *g_speeds, Vertex *g_vertices, int *g_indices, int *g_status, int* g_unit_class,

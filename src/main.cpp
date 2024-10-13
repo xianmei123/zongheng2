@@ -26,7 +26,6 @@ void produce_data(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChunkM
   // std::cout << "Produced a DataChunk: " << count++ << std::endl;
 }
 
-
 int main() {
   std::queue<DataChunk> dataChunkBuffer; // 缓冲区
   std::mutex dataChunkMutex; // 互斥量
