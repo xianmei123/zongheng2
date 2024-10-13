@@ -1,0 +1,8 @@
+{
+    "files.autoGuessEncoding": true,
+    "files.associations": {
+        "xhash": "cpp",
+        "memory": "cpp",
+        "map": "cpp"
+    }
+}

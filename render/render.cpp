@@ -6,7 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <thread>
-#include <random>  // ĞÂÔö
+#include <random>  // æ–°å¢
 
 #include "stb_image.h"
 #include "shader.h"
@@ -28,7 +28,7 @@ void processInput(GLFWwindow* window);
 Vertex calVertex(Vertex v1, Vertex v2, float p);
 
 
-//Ê¹ÓÃĞÂÊı¾İ
+//ä½¿ç”¨æ–°æ•°æ®
 bool useNewDataFetch = true;
 
 
@@ -208,7 +208,7 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
         else if (nrChannels == 4)
             format = GL_RGBA;
         else
-            format = GL_RGB; // Ä¬ÈÏ¸ñÊ½
+            format = GL_RGB; // é»˜è®¤æ ¼å¼
 
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, mapData);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -244,10 +244,10 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     int fps = 0;
 
 
-    // ¼ÆËã»ù´¡Ãæ»ı
+    // è®¡ç®—åŸºç¡€é¢ç§¯
     float base_area = (rig - lef) * (top - bottom) * 0.5;
 
-    // ³õÊ¼»¯Ëæ»úÊıÉú³ÉÆ÷
+    // åˆå§‹åŒ–éšæœºæ•°ç”Ÿæˆå™¨
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(0.0, 1.0);
@@ -350,18 +350,18 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
         }
         std::vector<int> indexLines = currentDelta < 0.5f ? currentChunk.indices : nextChunk.indices;*/
 
-        // ¼ÆËãµ±Ç°¿ÉÊÓÃæ»ı
+        // è®¡ç®—å½“å‰å¯è§†é¢ç§¯
         float current_area = (rig - lef) * (top - bottom);
         float scale_factor = current_area / base_area;
-        float skip_probability = (scale_factor - 1.0f) * 0.5f;  // ¿Éµ÷ÕûµÄÏµÊı
+        float skip_probability = (scale_factor - 1.0f) * 0.5f;  // å¯è°ƒæ•´çš„ç³»æ•°
         if (skip_probability < 0.0f) skip_probability = 0.0f;
-        if (skip_probability > 0.6f) skip_probability = 0.7f;  // ×î´óÌø¹ı¸ÅÂÊÎª70%
+        if (skip_probability > 0.6f) skip_probability = 0.7f;  // æœ€å¤§è·³è¿‡æ¦‚ç‡ä¸º70%
 
-        // Êä³öÌø¹ı¸ÅÂÊ£¨¿ÉÑ¡£©
+        // è¾“å‡ºè·³è¿‡æ¦‚ç‡ï¼ˆå¯é€‰ï¼‰
         //std::cout << "Skip Probability: " << skip_probability << std::endl;
 
         for (int i = 0; i < currentChunk.unit_count; i++) {
-            if (probabilities[i] > skip_probability) {  // Ëæ»ú¾ö¶¨ÊÇ·ñäÖÈ¾¸Ãµã
+            if (probabilities[i] > skip_probability) {  // éšæœºå†³å®šæ˜¯å¦æ¸²æŸ“è¯¥ç‚¹
                 vertices.push_back(calVertex(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta / renderTime));
             }
         }
@@ -467,7 +467,7 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(2, VAO);
     glDeleteBuffers(2, VBO);
-    glDeleteBuffers(2, EBO);  // È·±£EBOÒ²±»É¾³ı
+    glDeleteBuffers(2, EBO);  // ç¡®ä¿EBOä¹Ÿè¢«åˆ é™¤
 
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
@@ -481,25 +481,25 @@ void processInput(GLFWwindow* window)
 {
     int currentKeyStateE = glfwGetKey(window, GLFW_KEY_E);
     if (currentKeyStateE == GLFW_PRESS && previousKeyStateE == GLFW_RELEASE) {
-        // °´¼ü E ¸Õ±»°´ÏÂ
+        // æŒ‰é”® E åˆšè¢«æŒ‰ä¸‹
         if (renderSpeed < 3.0f) {
             renderSpeed += 0.5f;
             std::cout << "Render Speed: " << renderSpeed << "x" << std::endl;
         }
     }
-    // ¸üĞÂ°´¼ü×´Ì¬
+    // æ›´æ–°æŒ‰é”®çŠ¶æ€
     previousKeyStateE = currentKeyStateE;
 
-    // ¼ì²â Q ¼ü
+    // æ£€æµ‹ Q é”®
     int currentKeyStateQ = glfwGetKey(window, GLFW_KEY_Q);
     if (currentKeyStateQ == GLFW_PRESS && previousKeyStateQ == GLFW_RELEASE) {
-        // °´¼ü Q ¸Õ±»°´ÏÂ
+        // æŒ‰é”® Q åˆšè¢«æŒ‰ä¸‹
         if (renderSpeed > 0.5f) {
             renderSpeed -= 0.5f;
             std::cout << "Render Speed: " << renderSpeed << "x" << std::endl;
         }
     }
-    // ¸üĞÂ°´¼ü×´Ì¬
+    // æ›´æ–°æŒ‰é”®çŠ¶æ€
     previousKeyStateQ = currentKeyStateQ;
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
