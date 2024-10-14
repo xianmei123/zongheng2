@@ -104,6 +104,20 @@ public:
             }
     }
 
+
+    // Move camera to a specific position, clamping to borders
+    void MoveToPosition(glm::vec3 pos, float width, float height, float leftBorder, float bottomBorder)
+    {
+        float halfWidth = width / 2.0f;
+        float halfHeight = height / 2.0f;
+
+        // Clamp position
+        pos.x = glm::clamp(pos.x, leftBorder + halfWidth, -leftBorder - halfWidth);
+        pos.y = glm::clamp(pos.y, bottomBorder + halfHeight, -bottomBorder - halfHeight);
+
+        Position = glm::vec3(pos.x, pos.y, Position.z);
+    }
+
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
     void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
     {

@@ -33,7 +33,7 @@ struct Vertex {
 
 
 	Vertex(const glm::vec3& position, const glm::vec3& color, int camps, int status)
-		: position(position), color(color), camps(camps), status(status) {}
+		: position(position), color(color), camps(camps), status(status),padding(0) {}
 
 	Vertex()
 		: position(0.0f), color(0.0f), status(0), camps(0), padding(0) {}
