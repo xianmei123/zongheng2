@@ -7,12 +7,16 @@
 #include "TankUnit.h"
 #include "SoldierUnit.h"
 #include "MapRegion.h"
+#include "CudaFunc.cuh"
 //#include "/data/luyao/luyao/json/include/nlohmann/json.hpp"
+#include <cuda_runtime.h> 
 #include <vector>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
 #include <map>
+#include <queue>
+#include <mutex>
 #include <algorithm>
 #include <time.h>
 #include <fstream>
@@ -40,4 +44,6 @@ void ClearRelatedObjects(vector<int> cur_ids, map<int, shared_ptr<BaseUnit>>& al
 void InitRelatedRegions(map<int, MapRegion>& all_regions, int radius);
 void RefreshUnitsRelated(vector<int> cur_ids, map<int, shared_ptr<BaseUnit>>& all_units, map<int, MapRegion> all_regions);
 bool IsConnected(shared_ptr<BaseUnit> unit_fir, shared_ptr<BaseUnit> unit_sec);
+void ProduceData(queue<DataChunk>& dataChunkBuffer, mutex& dataChunkMutex, Vertex *vertices, int *indices, int unit_num);
+void LogPrint(ofstream &log_file, int time_stamp, int *status, int *unit_class, int unit_num);
 #endif // UTILS_H

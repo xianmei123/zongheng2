@@ -551,3 +551,45 @@ void RefreshUnitsRelated(vector<int> cur_ids, map<int, shared_ptr<BaseUnit>>& al
 		}
 	}
 }
+
+void ProduceData(queue<DataChunk>& dataChunkBuffer, mutex& dataChunkMutex, Vertex *vertices, int *indices, int unit_num) {
+  Vertex* tmp_vertices = new Vertex[unit_num];
+  int* tmp_indices = new int[unit_num];
+  memcpy(tmp_vertices, vertices, sizeof(Vertex) * unit_num);
+  memcpy(tmp_indices, indices, sizeof(int) * unit_num);
+  DataChunk newDataChunk = { tmp_vertices, tmp_indices, unit_num };
+  static int count = 0;
+  std::unique_lock<std::mutex> lock(dataChunkMutex); // 锁定互斥量
+  dataChunkBuffer.push(newDataChunk);
+  // std::cout << "Produced a DataChunk: " << count++ << std::endl;
+}
+
+
+void LogPrint(ofstream &log_file, int time_stamp, int *status, int *unit_class, int unit_num) {
+  int camp_0[5] = {0, 0, 0, 0, 0};
+  int camp_1[5] = {0, 0, 0, 0, 0};
+  int alive_0 = 0, alive_1 = 0;
+  
+  for (unsigned int i = 0; i < unit_num / 2; i++) {
+    if (status[i]) {
+      alive_0++;
+      camp_0[unit_class[i]]++;
+    }
+  }
+
+  for (unsigned int i = unit_num / 2; i < unit_num; i++) {
+    if (status[i]) {
+      alive_1++;
+      camp_1[unit_class[i]]++;
+    }
+  }
+
+  log_file << "------------------" + to_string(time_stamp) << endl;
+  log_file << "Unit\t\tCamp0\t\tCamp1" << endl;
+  log_file << "BaseStation\t"   + to_string(camp_0[0]) + "\t\t\t" + to_string(camp_1[0]) << endl;
+  log_file << "Plane\t\t"       + to_string(camp_0[1]) + "\t\t"   + to_string(camp_1[1]) << endl;
+  log_file << "Missle\t\t"      + to_string(camp_0[2]) + "\t\t"   + to_string(camp_1[2]) << endl;
+  log_file << "Tank\t\t"        + to_string(camp_0[3]) + "\t\t"   + to_string(camp_1[3]) << endl;
+  log_file << "Soldier\t\t"     + to_string(camp_0[4]) + "\t\t"   + to_string(camp_1[4]) << endl;
+  log_file << "Alive\t\t"       + to_string(alive_0)   + "\t\t"   + to_string(alive_1)   << endl;
+}

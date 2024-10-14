@@ -5,26 +5,12 @@
 #include <vector>
 #include <time.h>
 #include <algorithm>
-#include <cuda_runtime.h> 
 #include "../include/Utils.h"
-#include "../include/CudaFunc.cuh"
 #include "../render/render.h"
 #include <numeric>
 #include <thread>
 
 using namespace std;
-
-void produce_data(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChunkMutex, Vertex *vertices, int *indices, int unit_num) {
-  Vertex* tmp_vertices = new Vertex[unit_num];
-  int* tmp_indices = new int[unit_num];
-  memcpy(tmp_vertices, vertices, sizeof(Vertex) * unit_num);
-  memcpy(tmp_indices, indices, sizeof(int) * unit_num);
-  DataChunk newDataChunk = { tmp_vertices, tmp_indices, unit_num };
-  static int count = 0;
-  std::unique_lock<std::mutex> lock(dataChunkMutex); // 锁定互斥量
-  dataChunkBuffer.push(newDataChunk);
-  // std::cout << "Produced a DataChunk: " << count++ << std::endl;
-}
 
 int main() {
   std::queue<DataChunk> dataChunkBuffer; // 缓冲区
@@ -33,7 +19,11 @@ int main() {
   // 生成渲染线程
   Render render;
   std::thread dataThread(&Render::render, std::ref(render), std::ref(dataChunkBuffer), std::ref(dataChunkMutex));
-  
+
+  ofstream logFile("log.txt", std::ios::trunc);
+  if (!logFile.is_open())
+    std::cerr << "Unable to open log file!" << std::endl;
+
   vector<int> units;
   map<int, shared_ptr<BaseUnit>> all_units;
   map<int, MapRegion> all_regions;
@@ -186,7 +176,9 @@ int main() {
     return 0;
   }
 
-  produce_data(dataChunkBuffer, dataChunkMutex, vertices, indices, unit_num);
+  LogPrint(logFile, 0, status, unit_class, unit_num);
+
+  ProduceData(dataChunkBuffer, dataChunkMutex, vertices, indices, unit_num);
 
   for (int i = 1; i < time_length; ++i) {
     printf(">>>>>>>>>>>>>>>>%d\n", i);
@@ -212,12 +204,15 @@ int main() {
       return 0;
     }
 
-    produce_data(dataChunkBuffer, dataChunkMutex, vertices, indices, unit_num);
+    LogPrint(logFile, i, status, unit_class, unit_num);
+
+    ProduceData(dataChunkBuffer, dataChunkMutex, vertices, indices, unit_num);
   }
   end = clock();
   dataThread.join();  // 等待前端运行结束
   allend = clock();
   printf("Run time = %fs, All time = %fs\n", (double)(end - start) / CLOCKS_PER_SEC, (double)(allend - start) / CLOCKS_PER_SEC);
+  logFile.close(); // 关闭文件
 
   delete[] positions;
   delete[] target_positions;
