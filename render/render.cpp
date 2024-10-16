@@ -6,7 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <thread>
-#include <random>  // 新增
+#include <random>  // ??
 
 #include "stb_image.h"
 #include "shader.h"
@@ -25,12 +25,14 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
-Vertex calVertex(Vertex v1, Vertex v2, float p);
+Vertex calVertex(Vertex v1, Vertex v2, float p, bool hightLight);
 
 
-//使用新数据
+//?????
 bool useNewDataFetch = true;
 
+float gridLineWidth = 0.1f; // Adjust for thickness
+float transparency = 0.01f; // Adjust for transparency
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -132,6 +134,9 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
 
     Shader ourShader((RenderPath + "/shader/shader.vs").c_str(), (RenderPath + "/shader/shader.fs").c_str(), (RenderPath + "/shader/shaderpoint.gs").c_str());
     Shader mapShader((RenderPath + "/shader/map.vs").c_str(), (RenderPath + "/shader/map.fs").c_str());
+    // Shader for grid lines
+    Shader gridShader((RenderPath + "/shader/grid.vs").c_str(), (RenderPath + "/shader/grid.fs").c_str());
+
 
     glEnable(GL_PROGRAM_POINT_SIZE);
     stbi_set_flip_vertically_on_load(true);
@@ -157,6 +162,47 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
+
+   // Define grid lines
+    std::vector<float> gridVertices;
+   
+  
+
+    // Horizontal lines
+    for (float y = bottomBorder; y <= topBorder; y += gridLineWidth) {
+        gridVertices.push_back(leftBorder);
+        gridVertices.push_back(y);
+        gridVertices.push_back(-0.5f);
+
+        gridVertices.push_back(rightBorder);
+        gridVertices.push_back(y);
+        gridVertices.push_back(-0.5f);
+    }
+
+    // Vertical lines
+    for (float x = leftBorder; x <= rightBorder; x += gridLineWidth) {
+        gridVertices.push_back(x);
+        gridVertices.push_back(bottomBorder);
+        gridVertices.push_back(-0.5f);
+
+        gridVertices.push_back(x);
+        gridVertices.push_back(topBorder);
+        gridVertices.push_back(-0.5f);
+    }
+
+    // Setup buffers
+    unsigned int gridVAO, gridVBO;
+    glGenVertexArrays(1, &gridVAO);
+    glGenBuffers(1, &gridVBO);
+
+    glBindVertexArray(gridVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
+    glBufferData(GL_ARRAY_BUFFER, gridVertices.size() * sizeof(float), &gridVertices[0], GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+  
 
     unsigned int VBO[2], VAO[2], EBO[2];
     glGenVertexArrays(2, VAO);
@@ -208,7 +254,7 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
         else if (nrChannels == 4)
             format = GL_RGBA;
         else
-            format = GL_RGB; // 默认格式
+            format = GL_RGB; // ????
 
         glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, mapData);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -244,10 +290,10 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     int fps = 0;
 
 
-    // 计算基础面积
+    // ??????
     float base_area = (rig - lef) * (top - bottom) * 0.5;
 
-    // 初始化随机数生成器
+    // ?????????
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis(0.0, 1.0);
@@ -261,7 +307,7 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
 
     if (useNewDataFetch) {
         currentChunk = data.getDataChunk(dataChunkBuffer, dataChunkMutex);
-        // cout << "unit count: " << currentChunk.unit_count << endl;
+
         for (int i = 0; i < currentChunk.unit_count; i++) {
             probabilities.push_back(dis(gen));
             
@@ -276,10 +322,18 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     //cout << currentChunk.indices.size() << "cur " << currentChunk.vertices.size() << endl;
     //cout << nextChunk.indices.size() << "nex " << nextChunk.vertices.size() << endl;
 
+    int queryID = 0;
+    char inputBuffer[10] = "";
+    bool validID = false;
+    std::string positionInfo;
+    std::string gridInfo;
+
     float currentDelta = 0.0f;
+   
     while (!glfwWindowShouldClose(window))
     {
-
+        float renderTime = 1.0 / renderSpeed;
+        
         /* GLenum err;
          while ((err = glGetError()) != GL_NO_ERROR) {
              std::cout << "OpenGL error: " << err << std::endl;
@@ -290,6 +344,7 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
         ImGui::NewFrame();
 
         // Create UI for selecting render speed
+
         ImGui::Begin("Render Speed Options");
         ImGui::SetWindowSize(ImVec2(200, 150));
         if (ImGui::RadioButton("0.2x", renderSpeed == 0.2f)) {
@@ -309,7 +364,49 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
         }
         ImGui::End();
 
+        //ImGui::SetNextWindowPos(ImVec2(SCR_WIDTH - 300, 10), ImGuiCond_Always);
+        ImGui::Begin("Point Query");
+        ImGui::SetWindowSize(ImVec2(250, 120));
+        // Input text field for the ID
+        ImGui::PushItemWidth(100);
+        ImGui::InputText("Enter ID", inputBuffer, sizeof(inputBuffer));
+        ImGui::PopItemWidth();
 
+        // Button to submit query
+        if (ImGui::Button("Query")) {
+            queryID = std::stoi(inputBuffer);
+            validID = queryID > 0 && queryID <= currentChunk.unit_count;
+
+            if (validID) {
+                Vertex point = calVertex(currentChunk.vertices[queryID - 1], nextChunk.vertices[queryID - 1], currentDelta / renderTime, true);
+                glm::vec3 pos = point.position;
+                pos.x = pos.x;
+                pos.y = pos.y;
+             
+                // Calculate grid location
+                int gridX = static_cast<int>((pos.x - leftBorder) / gridLineWidth); // Assumes grid size of 1.0
+                int gridY = static_cast<int>((pos.y - bottomBorder) / gridLineWidth);
+
+                positionInfo = "Position: (" + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ")";
+                gridInfo = "Grid: (" + std::to_string(gridX) + ", " + std::to_string(gridY) + ")";
+                // Move camera to the point
+
+                //cout << pos.x << " " << pos.y << " " << pos.z << endl;
+                
+                camera.MoveToPosition(pos, rig - lef, top - bottom, leftBorder, bottomBorder);
+            }
+            else {
+                positionInfo = "Invalid ID!";
+                gridInfo = "";
+            }
+        }
+
+        // Display position and grid information
+        ImGui::Text("%s", positionInfo.c_str());
+        ImGui::Text("%s", gridInfo.c_str());
+
+        ImGui::End();
+        
 
         fps++;
         // per-frame time logic
@@ -325,7 +422,7 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
         // Get the point position of the next second
         // -------------------------------------------------------------------------------
 
-        float renderTime = 1.0 / renderSpeed;
+       
         if (currentDelta > renderTime) {
             freeDataChunk(currentChunk);
             currentChunk = nextChunk;
@@ -344,26 +441,33 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
 
         // Interpolate according to time based on the point position of the previous second and the next second
         // -------------------------------------------------------------------------------
-        std::vector<Vertex> vertices;
+        
         /* for (int i = 0; i < currentChunk.vertices.size(); i++) {
             vertices.push_back(calVertex(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta));
         }
         std::vector<int> indexLines = currentDelta < 0.5f ? currentChunk.indices : nextChunk.indices;*/
-
-        // 计算当前可视面积
+        std::vector<Vertex> vertices;
+        // ????????
         float current_area = (rig - lef) * (top - bottom);
         float scale_factor = current_area / base_area;
-        float skip_probability = (scale_factor - 1.0f) * 0.5f;  // 可调整的系数
+        float skip_probability = (scale_factor - 1.0f) * 0.5f;  // ??????
         if (skip_probability < 0.0f) skip_probability = 0.0f;
-        if (skip_probability > 0.6f) skip_probability = 0.7f;  // 最大跳过概率为70%
+        if (skip_probability > 0.6f) skip_probability = 0.7f;  // ???????70%
 
-        // 输出跳过概率（可选）
+        // ??????????
         //std::cout << "Skip Probability: " << skip_probability << std::endl;
+        int flagIndex = 0;
 
         for (int i = 0; i < currentChunk.unit_count; i++) {
-            if (probabilities[i] > skip_probability) {  // 随机决定是否渲染该点
-                vertices.push_back(calVertex(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta / renderTime));
+            if (i == queryID - 1) {  // ?????
+				vertices.push_back(calVertex(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta / renderTime, true));
+               /* flagIndex = vertices.size() - 1;
+                cout << "vertices " << vertices.size() << " " << vertices[vertices.size() - 1].position.x << " " <<  vertices[vertices.size() - 1].position.y <<" " << i + 1 << " " << vertices[vertices.size() - 1].status << endl;*/
             }
+            else if (probabilities[i] > skip_probability ) {  // ??????????
+                vertices.push_back(calVertex(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta / renderTime, false));
+            }
+           
         }
 
         std::vector<int> indexLines = currentDelta < 0.5f
@@ -418,6 +522,8 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
         // draw points
         // -------------------------------------------------------------------------------
         float time1 = static_cast<float>(glfwGetTime());
+
+      
         glBindVertexArray(VAO[1]);
         glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_DYNAMIC_DRAW);
@@ -437,7 +543,20 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
         glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, camps));
         glEnableVertexAttribArray(3);
 
+        glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, padding));
+        glEnableVertexAttribArray(4);
+
         glDrawArrays(GL_POINTS, 0, vertices.size());
+
+        gridShader.use();
+        gridShader.setMat4("projection", projection);
+        gridShader.setMat4("view", view);
+        gridShader.setFloat("transparency", transparency);
+
+        glBindVertexArray(gridVAO);
+        glDrawArrays(GL_LINES, 0, gridVertices.size() / 3);
+
+
 
         float time2 = static_cast<float>(glfwGetTime());
         //cout << "draw points time : " << time2 - time1 << endl;
@@ -467,8 +586,11 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(2, VAO);
     glDeleteBuffers(2, VBO);
-    glDeleteBuffers(2, EBO);  // 确保EBO也被删除
+    glDeleteBuffers(2, EBO);  // ??EBO????
 
+    // Cleanup
+    glDeleteVertexArrays(1, &gridVAO);
+    glDeleteBuffers(1, &gridVBO);
     // glfw: terminate, clearing all previously allocated GLFW resources.
     // ------------------------------------------------------------------
     glfwTerminate();
@@ -481,25 +603,25 @@ void processInput(GLFWwindow* window)
 {
     int currentKeyStateE = glfwGetKey(window, GLFW_KEY_E);
     if (currentKeyStateE == GLFW_PRESS && previousKeyStateE == GLFW_RELEASE) {
-        // 按键 E 刚被按下
+        // ?? E ????
         if (renderSpeed < 3.0f) {
             renderSpeed += 0.5f;
             std::cout << "Render Speed: " << renderSpeed << "x" << std::endl;
         }
     }
-    // 更新按键状态
+    // ??????
     previousKeyStateE = currentKeyStateE;
 
-    // 检测 Q 键
+    // ?? Q ?
     int currentKeyStateQ = glfwGetKey(window, GLFW_KEY_Q);
     if (currentKeyStateQ == GLFW_PRESS && previousKeyStateQ == GLFW_RELEASE) {
-        // 按键 Q 刚被按下
+        // ?? Q ????
         if (renderSpeed > 0.5f) {
             renderSpeed -= 0.5f;
             std::cout << "Render Speed: " << renderSpeed << "x" << std::endl;
         }
     }
-    // 更新按键状态
+    // ??????
     previousKeyStateQ = currentKeyStateQ;
 
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -620,9 +742,18 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
      //camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
-Vertex calVertex(Vertex v1, Vertex v2, float p) {
+Vertex calVertex(Vertex v1, Vertex v2, float p, bool highLight) {
     glm::vec3 v = (v1.position + (v2.position - v1.position) * p) * 4.0f;
+   
+    v.z = 0.0f;
     Vertex vertex(v, v1.color, v1.camps, v1.status);
-    // cout << v.x << " " << v.y << " " << v.z << endl;
+    //Vertex vertex(v, v1.color, v1.camps, 0);
+    if (highLight) {
+        //cout << v.z << endl;
+        vertex.padding = 1;
+        
+       // cout << "HIGHT " << v.x << " " << v.y << " " << v.z << " " << vertex.padding << endl;
+	}
+    
     return vertex;
 }
