@@ -12,11 +12,11 @@
 
 using namespace std;
 
-bool printlog1 = false;
-bool printlog2 = false;
-bool printlog3 = false;
-bool printlog4 = false;
-bool printlog5 = false;
+bool printlog1 = true;
+bool printlog2 = true;
+bool printlog3 = true;
+bool printlog4 = true;
+bool printlog5 = true;
 
 int main() {
   std::queue<DataChunk> dataChunkBuffer; // 缓冲区
@@ -29,23 +29,23 @@ int main() {
   Render render;
   std::thread dataThread(&Render::render, std::ref(render), std::ref(queryIdBuffer), std::ref(queryIdMutex), std::ref(dataChunkBuffer), std::ref(dataChunkMutex));
 
-  ofstream logFile1("log1.txt", std::ios::trunc);
+  ofstream logFile1("gpu_one_million_grid_divisions.txt", std::ios::trunc);
   if (!logFile1.is_open())
     std::cerr << "Unable to open log file!" << std::endl;
 
-  ofstream logFile2("log2.txt", std::ios::trunc);
+  ofstream logFile2("gpu_dynamic_entities_of_100000.txt", std::ios::trunc);
   if (!logFile2.is_open())
     std::cerr << "Unable to open log file!" << std::endl;
 
-  ofstream logFile3("log3.txt", std::ios::trunc);
+  ofstream logFile3("gpu_update_minute_level.txt", std::ios::trunc);
   if (!logFile3.is_open())
     std::cerr << "Unable to open log file!" << std::endl;
 
-  ofstream logFile4("log4.txt", std::ios::trunc);
+  ofstream logFile4("gpu_query.txt", std::ios::trunc);
   if (!logFile4.is_open())
     std::cerr << "Unable to open log file!" << std::endl;
 
-  ofstream logFile5("log5.txt", std::ios::trunc);
+  ofstream logFile5("gpu_memory.txt", std::ios::trunc);
   if (!logFile5.is_open())
     std::cerr << "Unable to open log file!" << std::endl;
 
