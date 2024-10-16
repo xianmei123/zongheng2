@@ -50,5 +50,6 @@ void ProduceData(queue<DataChunk>& dataChunkBuffer, mutex& dataChunkMutex, Verte
 void Log1Print(ofstream &log_file, double *positions, int unit_num);
 void Log2Print(ofstream &log_file, double *positions, double *directions, int *status, int unit_num);
 void Log3Print(ofstream &log_file, int time_stamp, int *status, int *unit_class, int unit_num, double run_time);
+void Log4Print(ofstream &log_file, queue<int>& queryIdBuffer, mutex& queryIdMutex, map<int, shared_ptr<BaseUnit>>& all_units, int* unit_class, double *positions, double *directions, int *status, int *weapon_nums);
 void Log5Print(ofstream &log_file, int time_stamp);
 #endif // UTILS_H

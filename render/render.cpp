@@ -81,7 +81,8 @@ void Render::freeDataChunk(DataChunk dataChunk)
     delete[] dataChunk.vertices;
 }
 
-void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChunkMutex)
+
+void Render::render(std::queue<int>& queryIdBuffer, std::mutex& queryIdMutex, std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChunkMutex)
 {
     //InitialRenderStatus();
     // glfw: initialize and configure
@@ -374,18 +375,29 @@ void Render::render(std::queue<DataChunk>& dataChunkBuffer, std::mutex& dataChun
 
         // Button to submit query
         if (ImGui::Button("Query")) {
-            queryID = std::stoi(inputBuffer);
-            validID = queryID > 0 && queryID <= currentChunk.unit_count;
+            if (inputBuffer[0] != '\0') { // Check if inputBuffer is not empty
+                queryID = std::stoi(inputBuffer);
+                validID = queryID > 0 && queryID <= currentChunk.unit_count;
+            }
+            else {
+                
+                validID = false; 
+            }
 
             if (validID) {
+                {
+                    std::unique_lock<std::mutex> lock(queryIdMutex); // Ëø¶¨»¥³âÁ¿
+                    queryIdBuffer.push(queryID);
+                    std::cout << "Query ID: " << queryID << std::endl;
+                }
                 Vertex point = calVertex(currentChunk.vertices[queryID - 1], nextChunk.vertices[queryID - 1], currentDelta / renderTime, true);
                 glm::vec3 pos = point.position;
                 pos.x = pos.x;
                 pos.y = pos.y;
              
                 // Calculate grid location
-                int gridX = static_cast<int>((pos.x - leftBorder) / gridLineWidth); // Assumes grid size of 1.0
-                int gridY = static_cast<int>((pos.y - bottomBorder) / gridLineWidth);
+                int gridX = static_cast<int>((pos.x - leftBorder) / 0.002f); // Assumes grid size of 1.0
+                int gridY = static_cast<int>((pos.y - bottomBorder) / 0.002f);
 
                 positionInfo = "Position: (" + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ")";
                 gridInfo = "Grid: (" + std::to_string(gridX) + ", " + std::to_string(gridY) + ")";

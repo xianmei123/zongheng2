@@ -237,6 +237,13 @@ int cudaUnitUpdate(
         return -1;
     }
 
+    cudaMemcpy(weapon_nums, g_weapon_nums, sizeof(int) * unit_num, cudaMemcpyDeviceToHost);
+    err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA Mem D2H Error: " << cudaGetErrorString(err) << std::endl;
+        return -1;
+    }
+
     cudaMemcpy(target_ids, g_target_ids, sizeof(int) * unit_num, cudaMemcpyDeviceToHost);
     err = cudaGetLastError();
     if (err != cudaSuccess) {

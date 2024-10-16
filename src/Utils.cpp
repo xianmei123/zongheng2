@@ -617,8 +617,8 @@ void Log3Print(ofstream &log_file, int time_stamp, int *status, int *unit_class,
     }
   }
 
-  log_file << "Step: " + to_string(time_stamp) << endl;
-  log_file << "Runtime: " + to_string(run_time) + "s"<< endl;
+  log_file << "Step:\t" + to_string(time_stamp) << endl;
+  log_file << "Runtime:\t" + to_string(run_time) + "s"<< endl;
   log_file << "Unit\t\tCamp0\t\tCamp1" << endl;
   log_file << "BaseStation\t"   + to_string(camp_0[0]) + "\t\t\t" + to_string(camp_1[0]) << endl;
   log_file << "Plane\t\t"       + to_string(camp_0[1]) + "\t\t"   + to_string(camp_1[1]) << endl;
@@ -629,11 +629,31 @@ void Log3Print(ofstream &log_file, int time_stamp, int *status, int *unit_class,
   log_file << " " << endl;
 }
 
+void Log4Print(ofstream &log_file, queue<int>& queryIdBuffer, mutex& queryIdMutex, map<int, shared_ptr<BaseUnit>>& all_units, int* unit_class, double *positions, double *directions, int *status, int *weapon_nums) {
+  std::unique_lock<std::mutex> lock(queryIdMutex);
+  unsigned int size = queryIdBuffer.size();
+  for(unsigned int i = 0; i < size; i++) {
+      int id = queryIdBuffer.front();
+      auto unit_id = all_units.find(id)->second;
+      queryIdBuffer.pop();
+      log_file << "Unit:\t" + to_string(id) << endl;
+      log_file << "Camp:\t" + to_string(unit_id->getCamp()) << endl;
+      log_file << "Status:\t" + to_string(status[id]) << endl;
+      log_file << "Position:\t" + to_string(positions[id*3]) + ", " + to_string(positions[id*3+1]) + ", " + to_string(positions[id*3+2]) << endl;
+      log_file << "Direction:\t" + to_string(directions[id*3]) + ", " + to_string(directions[id*3+1]) + ", " + to_string(directions[id*3+2]) << endl;
+      log_file << "Speed:\t" + to_string(unit_id->getSpeed()) << endl;
+      log_file << "Priority:\t" + to_string(unit_id->getPriority()) << endl;
+      log_file << "AttackRadius:\t" + to_string(unit_id->getAttackRadius()) << endl;
+      log_file << "WeaponNum:\t" + to_string(weapon_nums[id]) << endl;
+      log_file << " " << endl;
+   } 
+}
+
 void Log5Print(ofstream &log_file, int time_stamp) {
   PROCESS_MEMORY_COUNTERS pmc;
   if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
   {
-    log_file << "Step: " + to_string(time_stamp) << endl;
+    log_file << "Step:\t" + to_string(time_stamp) << endl;
     log_file << "当前进程占用内存大小为：" + to_string(pmc.WorkingSetSize / 1024 / 1024)  + "MB" << endl;
   }
 }

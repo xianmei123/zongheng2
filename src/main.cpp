@@ -15,15 +15,19 @@ using namespace std;
 bool printlog1 = false;
 bool printlog2 = false;
 bool printlog3 = false;
+bool printlog4 = false;
 bool printlog5 = false;
 
 int main() {
   std::queue<DataChunk> dataChunkBuffer; // 缓冲区
   std::mutex dataChunkMutex; // 互斥量
 
+  std::queue<int> queryIdBuffer;
+  std::mutex queryIdMutex; // 互斥量
+
   // 生成渲染线程
   Render render;
-  std::thread dataThread(&Render::render, std::ref(render), std::ref(dataChunkBuffer), std::ref(dataChunkMutex));
+  std::thread dataThread(&Render::render, std::ref(render), std::ref(queryIdBuffer), std::ref(queryIdMutex), std::ref(dataChunkBuffer), std::ref(dataChunkMutex));
 
   ofstream logFile1("log1.txt", std::ios::trunc);
   if (!logFile1.is_open())
@@ -35,6 +39,10 @@ int main() {
 
   ofstream logFile3("log3.txt", std::ios::trunc);
   if (!logFile3.is_open())
+    std::cerr << "Unable to open log file!" << std::endl;
+
+  ofstream logFile4("log4.txt", std::ios::trunc);
+  if (!logFile4.is_open())
     std::cerr << "Unable to open log file!" << std::endl;
 
   ofstream logFile5("log5.txt", std::ios::trunc);
@@ -66,7 +74,7 @@ int main() {
   
   unit_num *= 2;
 
-  int time_length = 50;
+  int time_length = 100;
   int time_slice = 1;
   clock_t start, run, end, allend; 
   
@@ -238,15 +246,20 @@ int main() {
     }
 
     ProduceData(dataChunkBuffer, dataChunkMutex, vertices, indices, unit_num);
+    if (printlog4) Log4Print(logFile4, queryIdBuffer, queryIdMutex, all_units, unit_class, positions, directions, status, weapon_nums);
   }
   end = clock();
   if (printlog3) cout << "Log3Print Over." << endl;
   if (printlog5) cout << "Log5Print Over." << endl;
   if (printlog1) Log1Print(logFile1, positions, unit_num);
   if (printlog2) Log2Print(logFile2, positions, directions, status, unit_num);
+  while (printlog4) {
+    Log4Print(logFile4, queryIdBuffer, queryIdMutex, all_units, unit_class, positions, directions, status, weapon_nums);
+  }
   logFile1.close();
   logFile2.close();
   logFile3.close();
+  logFile4.close();
   logFile5.close(); // 关闭文件
   dataThread.join();  // 等待前端运行结束
   allend = clock();
