@@ -20,6 +20,8 @@
 #include <algorithm>
 #include <time.h>
 #include <fstream>
+#include <windows.h>
+#include <psapi.h>
 
 using namespace std;
 
@@ -45,5 +47,8 @@ void InitRelatedRegions(map<int, MapRegion>& all_regions, int radius);
 void RefreshUnitsRelated(vector<int> cur_ids, map<int, shared_ptr<BaseUnit>>& all_units, map<int, MapRegion> all_regions);
 bool IsConnected(shared_ptr<BaseUnit> unit_fir, shared_ptr<BaseUnit> unit_sec);
 void ProduceData(queue<DataChunk>& dataChunkBuffer, mutex& dataChunkMutex, Vertex *vertices, int *indices, int unit_num);
-void LogPrint(ofstream &log_file, int time_stamp, int *status, int *unit_class, int unit_num);
+void Log1Print(ofstream &log_file, double *positions, int unit_num);
+void Log2Print(ofstream &log_file, double *positions, double *directions, int *status, int unit_num);
+void Log3Print(ofstream &log_file, int time_stamp, int *status, int *unit_class, int unit_num, double run_time);
+void Log5Print(ofstream &log_file, int time_stamp);
 #endif // UTILS_H

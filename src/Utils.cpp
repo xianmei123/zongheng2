@@ -381,7 +381,7 @@ void GetMapRegion(shared_ptr<BaseUnit>& unit, map<int, MapRegion>& map_regions) 
 	double unit_positionX = unit->getPositionX();
 	double unit_positionY = unit->getPositionY();
 	double unit_positionZ = unit->getPositionZ();
-	double min_distance = numeric_limits<double>::max();
+	double min_distance = DBL_MAX;
 	int region_id = 0;
 
   for (unsigned i = 0; i < map_regions.size(); ++i) {
@@ -564,8 +564,41 @@ void ProduceData(queue<DataChunk>& dataChunkBuffer, mutex& dataChunkMutex, Verte
   // std::cout << "Produced a DataChunk: " << count++ << std::endl;
 }
 
+void Log1Print(ofstream &log_file, double *positions, int unit_num) {
+  map<int, vector<int>> grid_units;
+  for (unsigned int id = 0; id < unit_num; id++) {
+    unsigned int grid_num = floor(positions[id*3])  * 10000 + floor(positions[id*3+1]);
+    if (grid_units.find(grid_num) == grid_units.end()) {
+      vector<int> newVec;
+      grid_units.emplace(grid_num, newVec);
+    }
+    grid_units.find(grid_num)->second.push_back(id);
+  }
 
-void LogPrint(ofstream &log_file, int time_stamp, int *status, int *unit_class, int unit_num) {
+  map<int, vector<int>>::iterator iter;
+  for (iter = grid_units.begin(); iter != grid_units.end(); ++iter) {
+      log_file << "Grid: " + to_string(iter->first) << endl;
+      string grid_unit("Unit:");
+      for (unsigned int i = 0; i < iter->second.size(); i++) {
+        grid_unit.append(" ");
+        grid_unit.append(to_string(iter->second.at(i)));
+      }
+      log_file << grid_unit << endl;
+  }
+  
+  cout << "Log1Print Over." << endl;
+}
+
+void Log2Print(ofstream &log_file, double *positions, double *directions, int *status, int unit_num) {
+  log_file << "ID\tpositionX\tpositionY\tpositionZ\tstatus" << endl;
+  for (unsigned int id = 0; id < unit_num; id++) {
+    log_file << to_string(id) + "\t" + to_string(positions[id*3]) + "\t" + to_string(positions[id*3+1]) + "\t"
+              + to_string(positions[id*3+2]) + "\t" + to_string(status[id]) << endl;
+  }
+  cout << "Log2Print Over." << endl;
+}
+
+void Log3Print(ofstream &log_file, int time_stamp, int *status, int *unit_class, int unit_num, double run_time) {
   int camp_0[5] = {0, 0, 0, 0, 0};
   int camp_1[5] = {0, 0, 0, 0, 0};
   int alive_0 = 0, alive_1 = 0;
@@ -584,7 +617,8 @@ void LogPrint(ofstream &log_file, int time_stamp, int *status, int *unit_class, 
     }
   }
 
-  log_file << "------------------" + to_string(time_stamp) << endl;
+  log_file << "Step: " + to_string(time_stamp) << endl;
+  log_file << "Runtime: " + to_string(run_time) + "s"<< endl;
   log_file << "Unit\t\tCamp0\t\tCamp1" << endl;
   log_file << "BaseStation\t"   + to_string(camp_0[0]) + "\t\t\t" + to_string(camp_1[0]) << endl;
   log_file << "Plane\t\t"       + to_string(camp_0[1]) + "\t\t"   + to_string(camp_1[1]) << endl;
@@ -592,4 +626,14 @@ void LogPrint(ofstream &log_file, int time_stamp, int *status, int *unit_class, 
   log_file << "Tank\t\t"        + to_string(camp_0[3]) + "\t\t"   + to_string(camp_1[3]) << endl;
   log_file << "Soldier\t\t"     + to_string(camp_0[4]) + "\t\t"   + to_string(camp_1[4]) << endl;
   log_file << "Alive\t\t"       + to_string(alive_0)   + "\t\t"   + to_string(alive_1)   << endl;
+  log_file << " " << endl;
+}
+
+void Log5Print(ofstream &log_file, int time_stamp) {
+  PROCESS_MEMORY_COUNTERS pmc;
+  if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
+  {
+    log_file << "Step: " + to_string(time_stamp) << endl;
+    log_file << "当前进程占用内存大小为：" + to_string(pmc.WorkingSetSize / 1024 / 1024)  + "MB" << endl;
+  }
 }

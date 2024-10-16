@@ -12,6 +12,11 @@
 
 using namespace std;
 
+bool printlog1 = false;
+bool printlog2 = false;
+bool printlog3 = false;
+bool printlog5 = false;
+
 int main() {
   std::queue<DataChunk> dataChunkBuffer; // 缓冲区
   std::mutex dataChunkMutex; // 互斥量
@@ -20,8 +25,20 @@ int main() {
   Render render;
   std::thread dataThread(&Render::render, std::ref(render), std::ref(dataChunkBuffer), std::ref(dataChunkMutex));
 
-  ofstream logFile("log.txt", std::ios::trunc);
-  if (!logFile.is_open())
+  ofstream logFile1("log1.txt", std::ios::trunc);
+  if (!logFile1.is_open())
+    std::cerr << "Unable to open log file!" << std::endl;
+
+  ofstream logFile2("log2.txt", std::ios::trunc);
+  if (!logFile2.is_open())
+    std::cerr << "Unable to open log file!" << std::endl;
+
+  ofstream logFile3("log3.txt", std::ios::trunc);
+  if (!logFile3.is_open())
+    std::cerr << "Unable to open log file!" << std::endl;
+
+  ofstream logFile5("log5.txt", std::ios::trunc);
+  if (!logFile5.is_open())
     std::cerr << "Unable to open log file!" << std::endl;
 
   vector<int> units;
@@ -29,10 +46,10 @@ int main() {
   map<int, MapRegion> all_regions;
   // 不同类的个数需要根据任务书分配
   units.push_back(1);                   // 基站
-  units.push_back(1000);      // 飞行器
-  units.push_back(1000);    // 导弹
-  units.push_back(2000);      // 坦克
-  units.push_back(5000);  // 士兵
+  units.push_back(3000);      // 飞行器
+  units.push_back(3000);    // 导弹
+  units.push_back(10000);      // 坦克
+  units.push_back(34000);  // 士兵
 
   int unit_num = accumulate(units.begin(), units.end(), 0);
   //  地图格点的长和宽
@@ -49,9 +66,9 @@ int main() {
   
   unit_num *= 2;
 
-  int time_length = 500;
+  int time_length = 50;
   int time_slice = 1;
-  clock_t start, end, allend; 
+  clock_t start, run, end, allend; 
   
   double *positions, *target_positions, *speeds, *directions, *distances;
   double *g_positions, *g_target_positions, *g_speeds, *g_directions, *g_distances, *g_init_positions;
@@ -176,7 +193,13 @@ int main() {
     return 0;
   }
 
-  LogPrint(logFile, 0, status, unit_class, unit_num);
+  if (printlog3) {
+    run = clock();
+    Log3Print(logFile3, 0, status, unit_class, unit_num, (double)(run - start) / CLOCKS_PER_SEC);
+  }
+  if (printlog5) {
+    Log5Print(logFile5, 0);
+  }
 
   ProduceData(dataChunkBuffer, dataChunkMutex, vertices, indices, unit_num);
 
@@ -188,8 +211,10 @@ int main() {
       return 0;
     }
     
-    all_units.find(0)->second->Update(time_slice, all_units, positions, target_positions, directions, distances, target_ids, status);
-    all_units.find(unit_num/2)->second->Update(time_slice, all_units, positions, target_positions, directions, distances, target_ids, status);
+    if (i % 5 == 0) {
+      all_units.find(0)->second->Update(time_slice, all_units, positions, target_positions, directions, distances, target_ids, status);
+      all_units.find(unit_num/2)->second->Update(time_slice, all_units, positions, target_positions, directions, distances, target_ids, status);
+    }
 
     if (cudaUnitUpdate(g_positions, g_target_positions, g_directions, g_distances,
                        g_target_ids, g_init_positions, g_weapon_nums, g_status, g_attack_radius, g_unit_class,
@@ -204,15 +229,28 @@ int main() {
       return 0;
     }
 
-    LogPrint(logFile, i, status, unit_class, unit_num);
+    if (printlog3) {
+      run = clock();
+      Log3Print(logFile3, i, status, unit_class, unit_num, (double)(run - start) / CLOCKS_PER_SEC);
+    }
+    if (printlog5) {
+      Log5Print(logFile5, i);
+    }
 
     ProduceData(dataChunkBuffer, dataChunkMutex, vertices, indices, unit_num);
   }
   end = clock();
+  if (printlog3) cout << "Log3Print Over." << endl;
+  if (printlog5) cout << "Log5Print Over." << endl;
+  if (printlog1) Log1Print(logFile1, positions, unit_num);
+  if (printlog2) Log2Print(logFile2, positions, directions, status, unit_num);
+  logFile1.close();
+  logFile2.close();
+  logFile3.close();
+  logFile5.close(); // 关闭文件
   dataThread.join();  // 等待前端运行结束
   allend = clock();
   printf("Run time = %fs, All time = %fs\n", (double)(end - start) / CLOCKS_PER_SEC, (double)(allend - start) / CLOCKS_PER_SEC);
-  logFile.close(); // 关闭文件
 
   delete[] positions;
   delete[] target_positions;
