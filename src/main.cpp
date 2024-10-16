@@ -12,11 +12,11 @@
 
 using namespace std;
 
-bool printlog1 = true;
-bool printlog2 = true;
-bool printlog3 = true;
-bool printlog4 = true;
-bool printlog5 = true;
+bool printGridDivision      = true;
+bool printDynamicEntities   = true;
+bool printUpdateMinuteLevel = true;
+bool printQuery             = true;
+bool printMemory            = true;
 
 int main() {
   std::queue<DataChunk> dataChunkBuffer; // 缓冲区
@@ -201,11 +201,11 @@ int main() {
     return 0;
   }
 
-  if (printlog3) {
+  if (printUpdateMinuteLevel) {
     run = clock();
     Log3Print(logFile3, 0, status, unit_class, unit_num, (double)(run - start) / CLOCKS_PER_SEC);
   }
-  if (printlog5) {
+  if (printMemory) {
     Log5Print(logFile5, 0);
   }
 
@@ -237,23 +237,31 @@ int main() {
       return 0;
     }
 
-    if (printlog3) {
+    if (printUpdateMinuteLevel) {
       run = clock();
       Log3Print(logFile3, i, status, unit_class, unit_num, (double)(run - start) / CLOCKS_PER_SEC);
     }
-    if (printlog5) {
+    if (printMemory) {
       Log5Print(logFile5, i);
     }
 
     ProduceData(dataChunkBuffer, dataChunkMutex, vertices, indices, unit_num);
-    if (printlog4) Log4Print(logFile4, queryIdBuffer, queryIdMutex, all_units, unit_class, positions, directions, status, weapon_nums);
+    if (printQuery) Log4Print(logFile4, queryIdBuffer, queryIdMutex, all_units, unit_class, positions, directions, status, weapon_nums);
   }
   end = clock();
-  if (printlog3) cout << "Log3Print Over." << endl;
-  if (printlog5) cout << "Log5Print Over." << endl;
-  if (printlog1) Log1Print(logFile1, positions, unit_num);
-  if (printlog2) Log2Print(logFile2, positions, directions, status, unit_num);
-  while (printlog4) {
+  if (printUpdateMinuteLevel)  {
+    logFile3 << "运行时间:\t" + to_string((double)(end - start) / CLOCKS_PER_SEC) + "s" << endl;
+    logFile3 << "Step平均时间:\t" +  to_string((double)(end - start) / CLOCKS_PER_SEC / time_length) + "s" << endl;
+    logFile3 << "加速比:\t" + to_string(time_length / ((double)(end - start) / CLOCKS_PER_SEC)) << endl;
+    cout << "Log3Print Over." << endl;
+  }
+  if (printMemory) {
+    Log5PrintFinal(logFile5);
+    cout << "Log5Print Over." << endl;
+  } 
+  if (printGridDivision) Log1Print(logFile1, positions, unit_num);
+  if (printDynamicEntities) Log2Print(logFile2, positions, directions, status, unit_num);
+  while (printQuery) {
     Log4Print(logFile4, queryIdBuffer, queryIdMutex, all_units, unit_class, positions, directions, status, weapon_nums);
   }
   logFile1.close();

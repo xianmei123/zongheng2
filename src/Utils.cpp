@@ -657,3 +657,12 @@ void Log5Print(ofstream &log_file, int time_stamp) {
     log_file << "当前进程占用内存大小为：" + to_string(pmc.WorkingSetSize / 1024 / 1024)  + "MB" << endl;
   }
 }
+
+void Log5PrintFinal(ofstream &log_file) {
+  PROCESS_MEMORY_COUNTERS pmc;
+  if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
+  {
+    log_file << " " << endl;
+    log_file << "后端运行结束，期间最大内存占用：" + to_string(pmc.WorkingSetSize / 1024 / 1024)  + "MB" << endl;
+  }
+}
