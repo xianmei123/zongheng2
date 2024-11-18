@@ -6,7 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <thread>
-#include <random>  // ??
+#include <random>  
 
 #include "stb_image.h"
 #include "shader.h"
@@ -28,10 +28,13 @@ void processInput(GLFWwindow* window);
 Vertex calVertex(Vertex v1, Vertex v2, float p, bool hightLight);
 
 
+float earthRadius = 8.5f;
+
 //?????
 bool useNewDataFetch = true;
 
-float gridLineWidth = 0.1f; // Adjust for thickness
+//float gridLineWidth = 0.1f; // Adjust for thickness
+float gridLineWidth = 1.0f; // Adjust for thickness
 float transparency = 0.01f; // Adjust for transparency
 
 // settings
@@ -57,7 +60,7 @@ float near = 0.1f, far = 100.0f;
 float leftBorder = -10.0f, rightBorder = 10.0f;
 float bottomBorder = -10.0f, topBorder = 10.0f;
 
-float maxHeight = topBorder / 4.0f;
+float maxHeight = topBorder;
 float minHeight = topBorder / 32.0f;
 
 // timing
@@ -243,8 +246,8 @@ void Render::render(std::queue<int>& queryIdBuffer, std::mutex& queryIdMutex, st
     // The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
     //unsigned char* mapData = stbi_load("../../../resources/map.jpg", &width, &height, &nrChannels, 0);
 
-    unsigned char* mapData = stbi_load((RenderPath + "/resources/worldmap.png").c_str(), &width, &height, &nrChannels, 0);
-    //unsigned char* mapData = stbi_load((RenderPath + "../../../worldmap.png").c_str(), &width, &height, &nrChannels, 0);
+    unsigned char* mapData = stbi_load((RenderPath + "/resources/worldmap.jpg").c_str(), &width, &height, &nrChannels, 0);
+    //unsigned char* mapData = stbi_load((RenderPath + "/resources/newmap1.png").c_str(), &width, &height, &nrChannels, 0);
     if (mapData)
     {
         GLenum format;
@@ -464,7 +467,7 @@ void Render::render(std::queue<int>& queryIdBuffer, std::mutex& queryIdMutex, st
         float scale_factor = current_area / base_area;
         float skip_probability = (scale_factor - 1.0f) * 0.5f;  // ??????
         if (skip_probability < 0.0f) skip_probability = 0.0f;
-        if (skip_probability > 0.6f) skip_probability = 0.7f;  // ???????70%
+        if (skip_probability > 0.7f) skip_probability = 0.7f;  // ???????70%
 
         // ??????????
         //std::cout << "Skip Probability: " << skip_probability << std::endl;
@@ -755,17 +758,54 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 }
 
 Vertex calVertex(Vertex v1, Vertex v2, float p, bool highLight) {
-    glm::vec3 v = (v1.position + (v2.position - v1.position) * p) * 4.0f;
-   
-    v.z = 0.0f;
-    Vertex vertex(v, v1.color, v1.camps, v1.status);
-    //Vertex vertex(v, v1.color, v1.camps, 0);
-    if (highLight) {
-        //cout << v.z << endl;
-        vertex.padding = 1;
-        
-       // cout << "HIGHT " << v.x << " " << v.y << " " << v.z << " " << vertex.padding << endl;
-	}
+ //   glm::vec3 v = (v1.position + (v2.position - v1.position) * p) * 4.0f;
+ //  
+ //   v.z = 0.0f;
+ //   Vertex vertex(v, v1.color, v1.camps, v1.status);
+ //   //Vertex vertex(v, v1.color, v1.camps, 0);
+ //   if (highLight) {
+ //       //cout << v.z << endl;
+ //       vertex.padding = 1;
+ //       
+ //      // cout << "HIGHT " << v.x << " " << v.y << " " << v.z << " " << vertex.padding << endl;
+	//}
+ //   
+ //   return vertex;
+ 
     
+   
+    glm::vec3 v = v1.position + (v2.position - v1.position) * p;
+    
+    //v = v * 4.0f;
+ 
+
+    float scale = abs(v.y / earthRadius);
+    if (scale > 1.0f) {
+        v.z = -1.0f;
+	}
+   
+
+    v.x = sqrt(earthRadius * earthRadius - v.y * v.y) * (v.x > 0.f ? 1.f : -1.f) * v.x / earthRadius;
+   
+
+    float distance = glm::length(glm::vec2(v.x, v.y));
+    if (distance > earthRadius) {
+     
+
+        v.z = -1.0f;
+    }
+    else {
+        v.z = 0.0f; 
+    }
+    
+    
+
+    
+    Vertex vertex(v, v1.color, v1.camps, v1.status);
+
+    if (highLight) {
+        vertex.padding = 1;
+    }
+
     return vertex;
 }
