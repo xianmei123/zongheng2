@@ -2,7 +2,7 @@
 #include "device_launch_parameters.h"
 
 __global__ void updatePositions(
-    double *directions, double *positions, double *speeds, Vertex *vertices, int *indices, int *status, int* unit_class,
+    double *directions, double *positions, double *speeds, Vertex1*vertices, int *indices, int *status, int* unit_class,
     int map_sizeX, int map_sizeY, int map_sizeZ,
     int time_slice, int unit_num
 ) {
@@ -41,7 +41,7 @@ __global__ void updatePositions(
     int camp = (i < unit_num / 2) ? 0 : 1;
 
     // indices[i] = i;
-    vertices[i] = Vertex(pos, col, status[i], camp);
+    vertices[i] = Vertex1(pos, col, status[i], camp);
 }
 
 __global__ void calculateDistances(
@@ -108,8 +108,8 @@ __global__ void unitUpdate(
 }
 
 int cudaUpdatePositions(
-    double *directions, double *positions, double *speeds, Vertex *vertices, int *indices,
-    double *g_directions, double *g_positions, double *g_speeds, Vertex *g_vertices, int *g_indices, int *g_status, int* g_unit_class,
+    double *directions, double *positions, double *speeds, Vertex1*vertices, int *indices,
+    double *g_directions, double *g_positions, double *g_speeds, Vertex1*g_vertices, int *g_indices, int *g_status, int* g_unit_class,
     int map_sizeX, int map_sizeY, int map_sizeZ,
     int time_slice, int unit_num
 ) {
@@ -137,7 +137,7 @@ int cudaUpdatePositions(
         return -1;
     }
 
-    cudaMemcpy(vertices, g_vertices,    sizeof(Vertex) * unit_num, cudaMemcpyDeviceToHost);
+    cudaMemcpy(vertices, g_vertices,    sizeof(Vertex1) * unit_num, cudaMemcpyDeviceToHost);
     err = cudaGetLastError();
     if (err != cudaSuccess) {
         std::cerr << "CUDA Mem Error: " << cudaGetErrorString(err) << std::endl;

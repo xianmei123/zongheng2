@@ -21,7 +21,7 @@
 using namespace std;
 
 // Point
-struct Vertex {
+struct VertexPoint {
 	// position
 	glm::vec3 position;
 	// normal
@@ -32,21 +32,21 @@ struct Vertex {
 	int padding;
 
 
-	Vertex(const glm::vec3& position, const glm::vec3& color, int camps, int status)
+	VertexPoint(const glm::vec3& position, const glm::vec3& color, int camps, int status)
 		: position(position), color(color), camps(camps), status(status),padding(0) {}
 
-	Vertex()
+	VertexPoint()
 		: position(0.0f), color(0.0f), status(0), camps(0), padding(0) {}
 };
 
 // Line
 struct Line {
 
-	Vertex vertex1;
+	VertexPoint vertex1;
 
-	Vertex vertex2;
+	VertexPoint vertex2;
 
-	Line(const Vertex& vertex1, const Vertex& vertex2)
+	Line(const VertexPoint& vertex1, const VertexPoint& vertex2)
 		: vertex1(vertex1), vertex2(vertex2) {}
 };
 
@@ -58,7 +58,7 @@ struct Line {
 
 
 struct DataChunk {
-	Vertex* vertices;
+	VertexPoint* vertices;
 	int* indices;
 	int unit_count;
 };
@@ -79,7 +79,7 @@ private:
 	map<int, DataChunk> dataMap; //data map, size = QUEUE_MAX_SIZE
 public:
 	void PrintDataChunk(DataChunk dataChunk) {
-		Vertex* vertices = dataChunk.vertices;
+		VertexPoint* vertices = dataChunk.vertices;
 		for (int i = 0; i < dataChunk.unit_count; i++) {
 			printf("camp: %d, status: %d, positions: %f\t%f\t%f, color: %f\t%f\t%f\n", vertices[i].camps, vertices[i].status, vertices[i].position.x, vertices[i].position.y, vertices[i].position.z,
 																			vertices[i].color.x, vertices[i].color.y, vertices[i].color.z);
@@ -90,7 +90,7 @@ public:
 	{
 		string RenderPath = std::string(PROJECT_SOURCE_DIR) + "/render";
 		while (true) {
-			vector<Vertex> vertices;
+			vector<VertexPoint> vertices;
 			vector<int> indices;
 			
 			unique_lock<std::mutex> indexlock(indexMutex);
@@ -146,7 +146,7 @@ public:
 					string type = root["entity"][i]["type"].asString();
 					glm::vec3 pos = glm::vec3(posX, posY, posZ);
 					glm::vec3 color = type == "Unit" ? glm::vec3(1, 0, 0) : glm::vec3(0, 1, 0);
-					Vertex vertex = Vertex(pos, color, 0, 0);
+					VertexPoint vertex = VertexPoint(pos, color, 0, 0);
 					vertices.push_back(vertex);
 					
 			
@@ -178,7 +178,7 @@ public:
 
 			DataChunk chunk;
 			chunk.unit_count = vertices.size();
-			chunk.vertices = new Vertex[chunk.unit_count];
+			chunk.vertices = new VertexPoint[chunk.unit_count];
 			chunk.indices = new int[indices.size()];
 			for (int i = 0; i < chunk.unit_count; i++) {
 				chunk.vertices[i] = vertices[i];

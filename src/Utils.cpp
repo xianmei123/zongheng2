@@ -552,10 +552,10 @@ void RefreshUnitsRelated(vector<int> cur_ids, map<int, shared_ptr<BaseUnit>>& al
 	}
 }
 
-void ProduceData(queue<DataChunk>& dataChunkBuffer, mutex& dataChunkMutex, Vertex *vertices, int *indices, int unit_num) {
-  Vertex* tmp_vertices = new Vertex[unit_num];
+void ProduceData(queue<DataChunk>& dataChunkBuffer, mutex& dataChunkMutex, Vertex1 *vertices, int *indices, int unit_num) {
+  Vertex1* tmp_vertices = new Vertex1[unit_num];
   int* tmp_indices = new int[unit_num];
-  memcpy(tmp_vertices, vertices, sizeof(Vertex) * unit_num);
+  memcpy(tmp_vertices, vertices, sizeof(Vertex1) * unit_num);
   memcpy(tmp_indices, indices, sizeof(int) * unit_num);
   DataChunk newDataChunk = { tmp_vertices, tmp_indices, unit_num };
   static int count = 0;

@@ -16,16 +16,19 @@
 #include "data_producer_multi.h"
 #include "render.h"
 
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "model.h"
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
-Vertex calVertex(Vertex v1, Vertex v2, float p, bool hightLight);
+bool IsInView(const glm::vec3& position, float radius = 0.0f);
+VertexPoint calVertexPoint(VertexPoint v1, VertexPoint v2, float p, bool hightLight);
 
 
 float earthRadius = 8.5f;
@@ -34,7 +37,7 @@ float earthRadius = 8.5f;
 bool useNewDataFetch = true;
 
 //float gridLineWidth = 0.1f; // Adjust for thickness
-float gridLineWidth = 1.0f; // Adjust for thickness
+float gridLineWidth = 0.4f; // Adjust for thickness
 float transparency = 0.01f; // Adjust for transparency
 
 // settings
@@ -134,13 +137,16 @@ void Render::render(std::queue<int>& queryIdBuffer, std::mutex& queryIdMutex, st
     // ------------------------------------
 
 
-    //Shader ourShader((RenderPath + "/shader/shader.vs").c_str(), (RenderPath + "/shader/shader.fs").c_str(), (RenderPath + "/shader/shader.gs").c_str());
+    Shader ourShader2((RenderPath + "/shader/shader.vs").c_str(), (RenderPath + "/shader/shader.fs").c_str(), (RenderPath + "/shader/shader.gs").c_str());
 
-    Shader ourShader((RenderPath + "/shader/shader.vs").c_str(), (RenderPath + "/shader/shader.fs").c_str(), (RenderPath + "/shader/shaderpoint.gs").c_str());
+    Shader ourShader3((RenderPath + "/shader/shader.vs").c_str(), (RenderPath + "/shader/shader.fs").c_str(), (RenderPath + "/shader/shaderpoint.gs").c_str());
     Shader mapShader((RenderPath + "/shader/map.vs").c_str(), (RenderPath + "/shader/map.fs").c_str());
     // Shader for grid lines
     Shader gridShader((RenderPath + "/shader/grid.vs").c_str(), (RenderPath + "/shader/grid.fs").c_str());
+    Shader entityShader((RenderPath + "/shader/obj.vs").c_str(),
+        (RenderPath + "/shader/obj.fs").c_str());
 
+    Model rock((RenderPath + "/resources/BerievA50/BerievA50.obj").c_str());
 
     glEnable(GL_PROGRAM_POINT_SIZE);
     stbi_set_flip_vertically_on_load(true);
@@ -167,6 +173,9 @@ void Render::render(std::queue<int>& queryIdBuffer, std::mutex& queryIdMutex, st
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
 
+  
+
+
    // Define grid lines
     std::vector<float> gridVertices;
    
@@ -192,6 +201,94 @@ void Render::render(std::queue<int>& queryIdBuffer, std::mutex& queryIdMutex, st
         gridVertices.push_back(x);
         gridVertices.push_back(topBorder);
         gridVertices.push_back(-0.5f);
+    }
+
+    unsigned int amount = 100000;
+    glm::mat4* modelMatrices;
+    modelMatrices = new glm::mat4[amount];
+
+    // configure instanced array
+    // -------------------------
+    //unsigned int buffer;
+    //glGenBuffers(1, &buffer);
+    //glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    //glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_DYNAMIC_DRAW);
+
+   
+    unsigned int instanceVBO;
+    glGenBuffers(1, &instanceVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VertexPoint) * 110000, nullptr, GL_DYNAMIC_DRAW);
+
+    //for (unsigned int i = 0; i < rock.meshes.size(); i++)
+    //{
+    //    unsigned int VAO = rock.meshes[i].VAO;
+    //    glBindVertexArray(VAO);
+    //    // set attribute pointers for matrix (4 times vec4)
+    //    glEnableVertexAttribArray(3);
+    //    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)0);
+    //    glEnableVertexAttribArray(4);
+    //    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(sizeof(glm::vec4)));
+    //    glEnableVertexAttribArray(5);
+    //    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(2 * sizeof(glm::vec4)));
+    //    glEnableVertexAttribArray(6);
+    //    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(3 * sizeof(glm::vec4)));
+
+    //    glVertexAttribDivisor(3, 1);
+    //    glVertexAttribDivisor(4, 1);
+    //    glVertexAttribDivisor(5, 1);
+    //    glVertexAttribDivisor(6, 1);
+
+    //    glBindVertexArray(0);
+    //}
+
+    for (unsigned int i = 0; i < rock.meshes.size(); i++) {
+        unsigned int VAO = rock.meshes[i].VAO;
+        glBindVertexArray(VAO);
+
+        // 绑定实例化VBO
+        glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+
+
+        //// position attribute
+        //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPoint), (void*)0);
+        //glEnableVertexAttribArray(0);
+        //// color  attribute
+        //glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, color));
+        //glEnableVertexAttribArray(1);
+
+        //glVertexAttribPointer(2, 1, GL_INT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, status));
+        //glEnableVertexAttribArray(2);
+
+        //glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, camps));
+        //glEnableVertexAttribArray(3);
+
+        //glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, padding));
+        //glEnableVertexAttribArray(4);
+
+        // 位置属性 (vec3)
+        glEnableVertexAttribArray(3);
+        glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, position));
+
+        // 颜色属性 (vec3)
+        glEnableVertexAttribArray(4);
+        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, color));
+
+        // 状态属性 (int)
+        glEnableVertexAttribArray(5);
+        glVertexAttribPointer(5, 1, GL_INT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, status));
+
+        // 阵营属性 (int)
+        glEnableVertexAttribArray(6);
+        glVertexAttribPointer(6, 1, GL_INT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, camps));
+
+        // 设置属性除数
+        glVertexAttribDivisor(3, 1);
+        glVertexAttribDivisor(4, 1);
+        glVertexAttribDivisor(5, 1);
+        glVertexAttribDivisor(6, 1);
+
+        glBindVertexArray(0);
     }
 
     // Setup buffers
@@ -393,7 +490,7 @@ void Render::render(std::queue<int>& queryIdBuffer, std::mutex& queryIdMutex, st
                     queryIdBuffer.push(queryID);
                     std::cout << "Query ID: " << queryID << std::endl;
                 }
-                Vertex point = calVertex(currentChunk.vertices[queryID - 1], nextChunk.vertices[queryID - 1], currentDelta / renderTime, true);
+                VertexPoint point = calVertexPoint(currentChunk.vertices[queryID - 1], nextChunk.vertices[queryID - 1], currentDelta / renderTime, true);
                 glm::vec3 pos = point.position;
                 pos.x = pos.x;
                 pos.y = pos.y;
@@ -458,29 +555,44 @@ void Render::render(std::queue<int>& queryIdBuffer, std::mutex& queryIdMutex, st
         // -------------------------------------------------------------------------------
         
         /* for (int i = 0; i < currentChunk.vertices.size(); i++) {
-            vertices.push_back(calVertex(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta));
+            vertices.push_back(calVertexPoint(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta));
         }
         std::vector<int> indexLines = currentDelta < 0.5f ? currentChunk.indices : nextChunk.indices;*/
-        std::vector<Vertex> vertices;
+        std::vector<VertexPoint> vertices;
+        vertices.reserve(currentChunk.unit_count);
+        //std::vector<glm::mat4> vertices;
+
         // ????????
         float current_area = (rig - lef) * (top - bottom);
         float scale_factor = current_area / base_area;
         float skip_probability = (scale_factor - 1.0f) * 0.5f;  // ??????
         if (skip_probability < 0.0f) skip_probability = 0.0f;
-        if (skip_probability > 0.7f) skip_probability = 0.7f;  // ???????70%
+        if (skip_probability > 0.95f) skip_probability = 0.95;  // ???????70%
 
         // ??????????
         //std::cout << "Skip Probability: " << skip_probability << std::endl;
         int flagIndex = 0;
 
+        float ver_time1 = static_cast<float>(glfwGetTime());
+
         for (int i = 0; i < currentChunk.unit_count; i++) {
             if (i == queryID - 1) {  // ?????
-				vertices.push_back(calVertex(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta / renderTime, true));
-               /* flagIndex = vertices.size() - 1;
+				VertexPoint point = calVertexPoint(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta / renderTime, true);
+				vertices.push_back(point);
+                glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), point.position);
+
+                /* flagIndex = vertices.size() - 1;
                 cout << "vertices " << vertices.size() << " " << vertices[vertices.size() - 1].position.x << " " <<  vertices[vertices.size() - 1].position.y <<" " << i + 1 << " " << vertices[vertices.size() - 1].status << endl;*/
             }
             else if (probabilities[i] > skip_probability ) {  // ??????????
-                vertices.push_back(calVertex(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta / renderTime, false));
+
+				VertexPoint point = calVertexPoint(currentChunk.vertices[i], nextChunk.vertices[i], currentDelta / renderTime, false);
+
+                if (!IsInView(point.position, 0.0f) && vertices.size() > 10) {
+                    continue;
+                }
+                vertices.push_back(point);
+                glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), point.position);
             }
            
         }
@@ -488,6 +600,10 @@ void Render::render(std::queue<int>& queryIdBuffer, std::mutex& queryIdMutex, st
         std::vector<int> indexLines = currentDelta < 0.5f
             ? std::vector<int>(currentChunk.indices, currentChunk.indices + currentChunk.unit_count)
             : std::vector<int>(nextChunk.indices, nextChunk.indices + nextChunk.unit_count);
+
+        float ver_time2 = static_cast<float>(glfwGetTime());
+        cout << "cal ver time : " << ver_time2 - ver_time1 << endl;
+
 
         // input
         // -----
@@ -501,6 +617,8 @@ void Render::render(std::queue<int>& queryIdBuffer, std::mutex& queryIdMutex, st
         // bind textures on corresponding texture units
         glBindTexture(GL_TEXTURE_2D, texture);
 
+        float map_time1 = static_cast<float>(glfwGetTime());
+/*
         // draw map
         // -------------------------------------------------------------------------------
         mapShader.use();
@@ -520,49 +638,123 @@ void Render::render(std::queue<int>& queryIdBuffer, std::mutex& queryIdMutex, st
         mapShader.setMat4("view", view);
         mapShader.setMat4("model", model);
 
-
         glBindVertexArray(VAO[0]);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-        // activate shader
-        ourShader.use();
-
-        //glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        ourShader.setMat4("projection", projection);
-        ourShader.setMat4("view", view);
-        ourShader.setMat4("model", model);
+        
+        float map_time2 = static_cast<float>(glfwGetTime());
+        cout << "draw map time : " << map_time2 - map_time1 << endl;
 
 
+        float entity_time1 = static_cast<float>(glfwGetTime());
+        if (scale_factor < 0.5) {
+            // first level
 
-        // draw points
-        // -------------------------------------------------------------------------------
-        float time1 = static_cast<float>(glfwGetTime());
+            glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(VertexPoint) * vertices.size(), vertices.data());
 
-      
-        glBindVertexArray(VAO[1]);
-        glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[1]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * indexLines.size(), &indexLines[0], GL_DYNAMIC_DRAW);
+            std::cout << "Instance count: " << vertices.size() << std::endl;
 
-        // position attribute
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
-        glEnableVertexAttribArray(0);
-        // color  attribute
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
-        glEnableVertexAttribArray(1);
+            model = glm::scale(model, glm::vec3(0.001f, 0.001f, 0.001f));
+            //projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+            entityShader.use();
+            entityShader.setMat4("model", model);
+            entityShader.setMat4("projection", projection);
+            entityShader.setMat4("view", view);
+            entityShader.setInt("texture_diffuse1", 0);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, rock.textures_loaded[0].id);
+            for (unsigned int i = 0; i < rock.meshes.size(); i++)
+            {
+                glBindVertexArray(rock.meshes[i].VAO);
+                glDrawElementsInstanced(GL_TRIANGLES, static_cast<unsigned int>(rock.meshes[i].indices.size()), GL_UNSIGNED_INT, 0, vertices.size());
+                glBindVertexArray(0);
+            }
+        }
+        else if (scale_factor >= 0.5 && scale_factor < 3) {
+            // second_level
+            ourShader2.use();
 
-        glVertexAttribPointer(2, 1, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, status));
-        glEnableVertexAttribArray(2);
+            //glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+            ourShader2.setMat4("projection", projection);
+            ourShader2.setMat4("view", view);
+            ourShader2.setMat4("model", model);
 
-        glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, camps));
-        glEnableVertexAttribArray(3);
+            // draw points
+            // -------------------------------------------------------------------------------
+            float time1 = static_cast<float>(glfwGetTime());
 
-        glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, padding));
-        glEnableVertexAttribArray(4);
+            glBindVertexArray(VAO[1]);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexPoint), &vertices[0], GL_DYNAMIC_DRAW);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[1]);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * indexLines.size(), &indexLines[0], GL_DYNAMIC_DRAW);
 
-        glDrawArrays(GL_POINTS, 0, vertices.size());
+            // position attribute
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPoint), (void*)0);
+            glEnableVertexAttribArray(0);
+            // color  attribute
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, color));
+            glEnableVertexAttribArray(1);
 
+            glVertexAttribPointer(2, 1, GL_INT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, status));
+            glEnableVertexAttribArray(2);
+
+            glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, camps));
+            glEnableVertexAttribArray(3);
+
+            glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, padding));
+            glEnableVertexAttribArray(4);
+
+            glDrawArrays(GL_POINTS, 0, vertices.size());
+        }
+        else if (scale_factor >= 3) {
+            // third_level
+            ourShader3.use();
+
+            //glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+            ourShader3.setMat4("projection", projection);
+            ourShader3.setMat4("view", view);
+            ourShader3.setMat4("model", model);
+
+            // draw points
+            // -------------------------------------------------------------------------------
+            float time1 = static_cast<float>(glfwGetTime());
+
+            glBindVertexArray(VAO[1]);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
+            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexPoint), &vertices[0], GL_DYNAMIC_DRAW);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[1]);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * indexLines.size(), &indexLines[0], GL_DYNAMIC_DRAW);
+
+            // position attribute
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPoint), (void*)0);
+            glEnableVertexAttribArray(0);
+            // color  attribute
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, color));
+            glEnableVertexAttribArray(1);
+
+            glVertexAttribPointer(2, 1, GL_INT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, status));
+            glEnableVertexAttribArray(2);
+
+            glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, camps));
+            glEnableVertexAttribArray(3);
+
+            glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, sizeof(VertexPoint), (void*)offsetof(VertexPoint, padding));
+            glEnableVertexAttribArray(4);
+
+            glDrawArrays(GL_POINTS, 0, vertices.size());
+        }
+
+        float entity_time2 = static_cast<float>(glfwGetTime());
+        cout << "draw points time : " << entity_time2 - entity_time1 << endl;
+
+        
+
+       
+
+
+
+        float grid_time1 = static_cast<float>(glfwGetTime());
         gridShader.use();
         gridShader.setMat4("projection", projection);
         gridShader.setMat4("view", view);
@@ -573,8 +765,8 @@ void Render::render(std::queue<int>& queryIdBuffer, std::mutex& queryIdMutex, st
 
 
 
-        float time2 = static_cast<float>(glfwGetTime());
-        //cout << "draw points time : " << time2 - time1 << endl;
+        float grid_time2 = static_cast<float>(glfwGetTime());
+        cout << "draw grid time : " << grid_time2 - grid_time1 << endl;
 
         // draw lines
         // -------------------------------------------------------------------------------
@@ -757,7 +949,14 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
      //camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
-Vertex calVertex(Vertex v1, Vertex v2, float p, bool highLight) {
+bool IsInView(const glm::vec3& position, float radius) {
+    glm::vec4 viewPos = glm::vec4(position, 1.0f);
+    return viewPos.x >= camera.Position.x + lef - radius && viewPos.x <= camera.Position.x + rig + radius &&
+        viewPos.y >= camera.Position.y + bottom - radius && viewPos.y <= camera.Position.y + top + radius;
+
+}
+
+VertexPoint calVertexPoint(VertexPoint v1, VertexPoint v2, float p, bool highLight) {
  //   glm::vec3 v = (v1.position + (v2.position - v1.position) * p) * 4.0f;
  //  
  //   v.z = 0.0f;
@@ -776,7 +975,7 @@ Vertex calVertex(Vertex v1, Vertex v2, float p, bool highLight) {
    
     glm::vec3 v = v1.position + (v2.position - v1.position) * p;
     
-    //v = v * 4.0f;
+    v = v * 4.0f;
  
 
     float scale = abs(v.y / earthRadius);
@@ -801,7 +1000,7 @@ Vertex calVertex(Vertex v1, Vertex v2, float p, bool highLight) {
     
 
     
-    Vertex vertex(v, v1.color, v1.camps, v1.status);
+    VertexPoint vertex(v, v1.color, v1.camps, v1.status);
 
     if (highLight) {
         vertex.padding = 1;

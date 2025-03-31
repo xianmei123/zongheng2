@@ -9,7 +9,7 @@
 #include <curand_kernel.h>
 #include <glm/glm.hpp>
 
-struct Vertex {
+struct Vertex1 {
     glm::vec3 position; // 位置
     glm::vec3 color;
     
@@ -18,23 +18,23 @@ struct Vertex {
     int padding;
 
     // 默认构造函数
-    __host__ __device__ Vertex() 
+    __host__ __device__ Vertex1() 
         : position(0.0f), color(0.0f), status(0), camps(0), padding(0) {}
 
     // 构造函数，加上 __host__ __device__ 修饰符，并且接受status和camps参数
-    __host__ __device__ Vertex(const glm::vec3& position, const glm::vec3& color, int status = 0, int camps = 0)
+    __host__ __device__ Vertex1(const glm::vec3& position, const glm::vec3& color, int status = 0, int camps = 0)
         : position(position), color(color), status(status), camps(camps), padding(0) {}
 };
 
 struct DataChunk {
-    Vertex* vertices;
+    Vertex1* vertices;
     int* indices;
     int unit_count;
 };
 
 extern "C" int cudaUpdatePositions(
-    double *directions, double *positions, double *speeds, Vertex *vertices, int *indices, 
-    double *g_directions, double *g_positions, double *g_speeds, Vertex *g_vertices, int *g_indices, int *g_status, int* g_unit_class,
+    double *directions, double *positions, double *speeds, Vertex1 *vertices, int *indices,
+    double *g_directions, double *g_positions, double *g_speeds, Vertex1 *g_vertices, int *g_indices, int *g_status, int* g_unit_class,
     int map_sizeX, int map_sizeY, int map_sizeZ,
     int time_slice, int unit_num
 );

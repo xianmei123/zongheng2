@@ -12,6 +12,8 @@ set(CMAKE_CXX_STANDARD 11)
 
 set(GLFW_LIB ${CMAKE_SOURCE_DIR}/render/lib/glfw3.lib)
 
+set(ASSIMP_LIB ${CMAKE_SOURCE_DIR}/render/lib/assimp-vc140-mt.lib)
+
 
 include_directories(${CMAKE_SOURCE_DIR}/render/include)
 
@@ -21,4 +23,4 @@ file(GLOB RENDER_HEADERS ${CMAKE_SOURCE_DIR}/render/*.h ${CMAKE_SOURCE_DIR}/rend
 
 add_library(renderLib STATIC ${RENDER_SOURCES})
 
-target_link_libraries(renderLib PRIVATE ${GLFW_LIB})
+target_link_libraries(renderLib PRIVATE ${GLFW_LIB} ${ASSIMP_LIB})

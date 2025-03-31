@@ -9,6 +9,7 @@
 #include "../render/render.h"
 #include <numeric>
 #include <thread>
+#include "../render/render_new.h"
 
 using namespace std;
 
@@ -84,7 +85,7 @@ int main() {
   double *attack_radius, *g_attack_radius;
   int *target_ids, *weapon_nums, *status, *unit_class;
   int *g_target_ids, *g_weapon_nums, *g_status, *g_unit_class;
-  Vertex *vertices, *g_vertices; // for DataChunk
+  Vertex1*vertices, *g_vertices; // for DataChunk
   int *indices, *g_indices; // for DataChunk
 
   cudaMalloc(&g_positions,        sizeof(double) * 3 * unit_num);
@@ -100,7 +101,7 @@ int main() {
   cudaMalloc(&g_attack_radius,    sizeof(double) * unit_num);
   cudaMalloc(&g_unit_class,       sizeof(int) * unit_num);
 
-  cudaMalloc(&g_vertices,         sizeof(Vertex) * unit_num);
+  cudaMalloc(&g_vertices,         sizeof(Vertex1) * unit_num);
   cudaMalloc(&g_indices,          sizeof(int) * unit_num);
 
   positions            = new double[unit_num * 3];
@@ -115,7 +116,7 @@ int main() {
   attack_radius        = new double[unit_num];
   unit_class           = new int[unit_num];
 
-  vertices             = new Vertex[unit_num];
+  vertices             = new Vertex1[unit_num];
   indices              = new int[unit_num];
 
   // 初始化
@@ -148,7 +149,7 @@ int main() {
     attack_radius[i] = unit_i->getAttackRadius();
 
     indices[i] = i;
-    vertices[i] = Vertex(glm::vec3(unit_i->getPositionX(), unit_i->getPositionY(), unit_i->getPositionZ()), 
+    vertices[i] = Vertex1(glm::vec3(unit_i->getPositionX(), unit_i->getPositionY(), unit_i->getPositionZ()),
                          glm::vec3(0, 0, 0), unit_i->getStatus(), unit_i->getCamp());
   }
   int count = 0;
@@ -175,7 +176,7 @@ int main() {
   cudaMemcpy(g_attack_radius, attack_radius,        sizeof(double) * unit_num, cudaMemcpyHostToDevice);
   cudaMemcpy(g_unit_class, unit_class,              sizeof(int) * unit_num, cudaMemcpyHostToDevice);
 
-  cudaMemcpy(g_vertices, vertices,                  sizeof(Vertex) * unit_num, cudaMemcpyHostToDevice);
+  cudaMemcpy(g_vertices, vertices,                  sizeof(Vertex1) * unit_num, cudaMemcpyHostToDevice);
   cudaMemcpy(g_indices, indices,                    sizeof(int) * unit_num, cudaMemcpyHostToDevice);
 
   start = clock();
